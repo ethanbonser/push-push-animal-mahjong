@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mahjong Tui Tui Le - Animal Push-Push</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tone.js for ASMR Mahjong clack sounds -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <!-- html2canvas for instant bug-report screenshotting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- QRCode.js for phone scan to connect -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- PeerJS for cross-device real-time P2P sync between PC and Phone -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <!-- Paho MQTT client for ultra-fast, zero-config cloud friend presence & invitations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&display=swap');
+
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Fredoka', 'Nunito', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      background-color: #bcd48f;
+      background-image: radial-gradient(#cadf9d 15%, transparent 16%), radial-gradient(#adc87d 15%, transparent 16%);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+    }
+
+    /* 2.5D Mahjong Tile Aesthetics - Normal comfortable proportions */
+    .mj-tile-box {
+      aspect-ratio: 1 / 1.28;
+      border-radius: 6px;
+      position: relative;
+      transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1), box-shadow 0.18s ease;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      max-height: 54px;
+    }
+    @media (min-width: 768px) {
+      .mj-tile-box {
+        max-height: 62px;
+      }
+    }
+    @media (min-width: 1024px) {
+      .mj-tile-box {
+        max-height: 70px;
+      }
+    }
+
+    .mj-face-cream {
+      background: linear-gradient(180deg, #fffdf7 0%, #f6ebdc 100%);
+      border: 1px solid #d4c5a6;
+      border-bottom: 3px solid #b7a482;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 3px rgba(0,0,0,0.18);
+    }
+
+    .mj-back-jade {
+      background: linear-gradient(180deg, #4ba376 0%, #327a55 100%);
+      border: 1px solid #286847;
+      border-bottom: 3px solid #1c4b32;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.35), 0 2px 3px rgba(0,0,0,0.18);
+    }
+
+    /* Column Slide Displacement Animation */
+    @keyframes slideDisplaceDown {
+      0% { transform: translateY(-12px); opacity: 0.7; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes slideDisplaceUp {
+      0% { transform: translateY(12px); opacity: 0.7; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .anim-slide-down {
+      animation: slideDisplaceDown 0.2s ease-out;
+    }
+    .anim-slide-up {
+      animation: slideDisplaceUp 0.2s ease-out;
+    }
+
+    /* Silent Red X Animation (No noise, crisp error visual) */
+    @keyframes silentXPulse {
+      0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+      30% { transform: scale(1.15) rotate(0deg); opacity: 1; }
+      65% { transform: scale(1) rotate(0deg); opacity: 0.95; }
+      100% { transform: scale(0.85); opacity: 0; }
+    }
+    .silent-x-overlay {
+      animation: silentXPulse 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      pointer-events: none;
+    }
+
+    /* Bouncy Directional Arrow */
+    @keyframes arrowBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+    .anim-arrow-bounce {
+      animation: arrowBob 0.65s infinite ease-in-out;
+    }
+
+    /* Pop-out tile celebration */
+    @keyframes popHighlight {
+      0% { transform: scale(0.85); }
+      50% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    .anim-pop-highlight {
+      animation: popHighlight 0.35s ease-out;
+    }
+
+    /* Turn Pass Floating Banner */
+    @keyframes floatBanner {
+      0% { transform: translateY(10px); opacity: 0; }
+      20% { transform: translateY(0); opacity: 1; }
+      80% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-10px); opacity: 0; }
+    }
+    .anim-banner {
+      animation: floatBanner 1.1s ease-in-out forwards;
+    }
+  </style>
+</head>
+<body class="h-screen h-[100dvh] w-full text-slate-800 flex flex-col items-center justify-between p-1 sm:p-2 overflow-hidden">
+
+  <!-- MULTIPLAYER LOBBY BAR -->
+  <div id="room-controls-bar" class="w-full max-w-sm sm:max-w-md bg-white/90 backdrop-blur-md rounded-xl p-1.5 shadow-sm border border-white/60 mb-0.5 flex flex-col gap-1 shrink-0">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse" id="conn-indicator"></span>
+        <span id="conn-status-text" class="text-[11px] font-black text-slate-700">Online & Ready</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <button id="btn-toggle-friends" class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition active:scale-95 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping"></span>
+          <span>👥 Friends</span>
+          <span id="online-friends-count" class="bg-indigo-800 text-indigo-100 px-1.5 py-0.2 rounded-full text-[9px]">0</span>
+        </button>
+        <div id="role-tag" class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+          Player 1 (Local)
+        </div>
+      </div>
+    </div>
+
+    <!-- Room Action Buttons & Inputs -->
+    <div class="flex items-center gap-1 flex-wrap">
+      <button id="btn-create-room" class="flex-1 min-w-[70px] bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] py-1 px-2 rounded-lg shadow-xs transition active:scale-95">
+        Create Room
+      </button>
+
+      <div class="flex items-center gap-1 flex-1 min-w-[110px]">
+        <input id="input-room-code" type="text" placeholder="CODE" maxlength="6" class="w-full text-center uppercase tracking-widest font-black text-[10px] bg-slate-100 border border-slate-300 rounded-lg py-1 px-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-800" />
+        <button id="btn-join-room" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[10px] py-1 px-2.5 rounded-lg shadow-xs transition active:scale-95">
+          Join
+        </button>
+      </div>
+
+      <button id="btn-mode-toggle" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-[10px] py-1 px-1.5 rounded-lg transition active:scale-95" title="Switch between Solo AI and Pass & Play">
+        <span id="mode-label" class="font-black text-slate-900">AI</span>
+      </button>
+    </div>
+
+    <!-- Active Room Code Badge -->
+    <div id="room-code-badge" class="hidden flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-2 py-0.5 text-[10px]">
+      <span class="text-amber-800 font-bold">Room: <strong id="active-code-display" class="font-black tracking-widest text-amber-950 text-xs ml-1 select-all"></strong></span>
+      <div class="flex items-center gap-2">
+        <button id="btn-show-qr" class="text-[9px] font-black text-indigo-700 hover:text-indigo-900 underline active:scale-95">📱 Phone QR</button>
+        <button id="btn-copy-code" class="text-[9px] font-black text-amber-700 hover:text-amber-900 underline active:scale-95">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENHANCED FRIENDS & REAL-TIME PRESENCE HUB MODAL -->
+  <div id="friends-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-2.5">
+    <div class="bg-white rounded-3xl max-w-sm sm:max-w-md w-full p-4 shadow-2xl flex flex-col gap-2.5 border border-slate-100">
+      <div class="flex justify-between items-center border-b pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">👥</span>
+          <div>
+            <h3 class="font-black text-slate-800 text-sm sm:text-base leading-none">Friends Network</h3>
+            <span class="text-[9px] text-emerald-600 font-bold flex items-center gap-1 mt-0.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live Cloud Presence Active
+            </span>
+          </div>
+        </div>
+        <button id="btn-close-friends" class="text-slate-400 hover:text-slate-700 font-bold text-2xl leading-none">&times;</button>
+      </div>
+
+      <!-- User Profile & Permanent Friend Code Card -->
+      <div class="bg-gradient-to-r from-indigo-50 to-emerald-50 border border-indigo-100 rounded-2xl p-2.5 flex flex-col gap-1.5 shadow-inner">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+              <span id="avatar-initial">P</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-1">
+                <input id="input-my-username" type="text" maxlength="14" class="text-xs font-black text-slate-800 bg-white/90 border border-indigo-200 rounded-md px-1.5 py-0.5 w-28 focus:outline-none focus:ring-1 focus:ring-indigo-500" title="Click to rename yourself" />
+              </div>
+              <div class="flex items-center gap-1 mt-0.5">
+                <span class="text-[9px] font-bold text-slate-500">Tag:</span>
+                <span id="display-my-tag" class="font-mono text-[10px] font-black text-indigo-900 bg-indigo-100/70 px-1.5 py-0.2 rounded select-all"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <button id="btn-copy-my-tag" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[10px] py-1.5 px-2.5 rounded-xl transition active:scale-95 shadow-sm flex items-center gap-1">
+              <span>📋</span> Copy Tag
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-1 border-t border-indigo-100/60 text-[8.5px] text-slate-500 font-medium">
+          <span>🔒 Bound permanently to your browser</span>
+          <button id="btn-toggle-custom-code-box" class="text-indigo-600 hover:text-indigo-800 font-bold underline">Edit Code</button>
+        </div>
+
+        <!-- Collapsible Custom Code Editor -->
+        <div id="custom-code-drawer" class="hidden flex items-center gap-1 pt-1">
+          <input id="input-custom-tag" type="text" maxlength="12" placeholder="#CODE" class="font-mono text-xs font-black uppercase text-indigo-950 bg-white border border-indigo-300 rounded-lg px-2 py-1 flex-1 focus:outline-none" />
+          <button id="btn-save-custom-tag" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg active:scale-95 shadow-xs">
+            Save
+          </button>
+        </div>
+      </div>
+
+      <!-- Add Friend Box -->
+      <div class="flex items-center gap-1.5">
+        <input id="input-add-friend-tag" type="text" placeholder="Enter Friend Tag (e.g. #DOG-4281)" class="flex-1 uppercase font-mono text-xs font-black bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800" />
+        <button id="btn-add-friend" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-3.5 py-1.5 rounded-xl transition active:scale-95 shadow-sm">
+          + Add
+        </button>
+      </div>
+
+      <!-- Friends List with Live Online/Offline/In-Game Status -->
+      <div class="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1" id="friends-list-container">
+        <!-- Dynamically populated friend rows -->
+      </div>
+      
+      <div class="bg-slate-50 rounded-xl p-2 border border-slate-200/60 flex items-center justify-between text-[9px] text-slate-500">
+        <span class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Online
+          <span class="w-2 h-2 rounded-full bg-amber-400 inline-block ml-1"></span> In Game
+          <span class="w-2 h-2 rounded-full bg-slate-300 inline-block ml-1"></span> Offline
+        </span>
+        <button id="btn-refresh-friends-status" class="text-indigo-600 hover:text-indigo-800 font-bold underline active:scale-95">Sync Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INCOMING GAME CHALLENGE POPUP -->
+  <div id="challenge-popup" class="hidden fixed top-4 z-50 bg-slate-900 text-white border-2 border-indigo-400 p-3 rounded-2xl shadow-2xl flex items-center gap-3 anim-banner">
+    <div class="text-2xl animate-bounce">🎮</div>
+    <div>
+      <div class="text-xs font-black" id="challenge-caller-name">Friend challenged you!</div>
+      <div class="text-[10px] text-slate-300">Start 2-player Mahjong match now?</div>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <button id="btn-accept-challenge" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-2.5 py-1.5 rounded-xl shadow active:scale-95">Accept</button>
+      <button id="btn-decline-challenge" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs px-2 py-1.5 rounded-xl active:scale-95">✕</button>
+    </div>
+  </div>
+
+  <!-- QR CODE MODAL FOR MOBILE CONNECT -->
+  <div id="qr-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-xs w-full p-4 shadow-2xl flex flex-col items-center gap-3 text-center">
+      <div class="flex justify-between items-center w-full border-b pb-1">
+        <h3 class="font-black text-slate-800 text-sm flex items-center gap-1.5">
+          <span>📱</span> Connect Phone to PC
+        </h3>
+        <button id="btn-close-qr" class="text-slate-400 hover:text-slate-700 font-bold text-xl leading-none">&times;</button>
+      </div>
+
+      <!-- Prominent Room Code Display for 100% reliable entry -->
+      <div class="flex flex-col items-center bg-emerald-50 border-2 border-emerald-300 p-2.5 rounded-2xl w-full shadow-inner">
+        <span class="text-[10px] text-emerald-800 font-black uppercase tracking-wider">Your Room Code</span>
+        <span id="qr-room-code-text" class="text-2xl font-black text-emerald-950 tracking-widest font-mono select-all"></span>
+        <span class="text-[9px] text-emerald-700 mt-0.5">Type this 5-letter code on your phone to join instantly</span>
+      </div>
+
+      <!-- QR Canvas Box -->
+      <div id="qrcode-container" class="p-2 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-center min-h-[150px] min-w-[150px]"></div>
+
+      <!-- Quick Web URL Options -->
+      <div class="w-full text-left bg-slate-50 border border-slate-200 rounded-xl p-2 flex flex-col gap-1.5">
+        <label for="input-custom-url" class="text-[10px] text-slate-600 font-bold block">
+          Game Web Address:
+        </label>
+        <div class="flex items-center gap-1">
+          <input id="input-custom-url" type="text" class="w-full text-[10px] bg-white border border-slate-300 rounded-lg p-1.5 font-mono text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500" value="https://eclectic-entremet-a3f40a.netlify.app" />
+          <button id="btn-refresh-qr" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg active:scale-95 transition">
+            Set
+          </button>
+        </div>
+        <p class="text-[9px] text-slate-500 leading-tight">
+          🌐 Scanning this QR code will open your Netlify live game directly on your phone and automatically join the room.
+        </p>
+      </div>
+
+      <div class="flex w-full gap-1.5">
+        <button id="btn-copy-join-url" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-black text-xs py-2 px-2 rounded-xl shadow-sm transition active:scale-95 flex items-center justify-center gap-1">
+          <span>📋</span> Copy Code
+        </button>
+        <button id="btn-copy-full-link" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-2 px-2 rounded-xl shadow-sm transition active:scale-95 flex items-center justify-center gap-1">
+          <span>🔗</span> Copy Link
+        </button>
+      </div>
+      <div id="qr-copy-feedback" class="text-[10px] text-emerald-700 font-bold hidden">Copied to clipboard!</div>
+    </div>
+  </div>
+
+  <!-- HEADER (No Level indicator, compact height) -->
+  <header class="w-full max-w-6xl flex items-center justify-between px-2 py-0.5 shrink-0">
+    <button id="btn-restart" class="w-7 h-7 rounded-full bg-white/80 hover:bg-white text-emerald-800 shadow-sm flex items-center justify-center font-bold active:scale-95 transition" title="Restart Board">
+      <svg class="w-3.5 h-3.5 stroke-current stroke-2 fill-none" viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+      </svg>
+    </button>
+    
+    <div class="flex items-center gap-2">
+      <div class="text-[11px] font-bold text-emerald-950 bg-white/80 backdrop-blur-sm px-3 py-0.5 rounded-full shadow-xs flex items-center gap-1.5 border border-white/60">
+        <span class="text-slate-500">P1 Score:</span>
+        <span id="score-display" class="font-black text-emerald-900 text-sm">0</span>
+      </div>
+      <div id="opp-score-pill" class="text-[11px] font-bold text-slate-700 bg-white/80 px-3 py-0.5 rounded-full shadow-xs flex items-center gap-1.5 border border-white/60">
+        <span class="text-slate-500">P2 Score:</span>
+        <span id="opp-score-display" class="font-black text-slate-900 text-sm">0</span>
+      </div>
+    </div>
+
+    <button id="btn-sfx" class="w-7 h-7 rounded-full bg-white/80 hover:bg-white text-emerald-800 shadow-sm flex items-center justify-center text-xs font-bold active:scale-95 transition" title="Toggle SFX">
+      🔊
+    </button>
+  </header>
+
+  <!-- CENTER PUSH LANE & ACTIVE PUSHER TILE (Placed horizontally above the side-by-side grids) -->
+  <section class="w-full max-w-6xl py-1 px-3 flex items-center justify-between bg-white/50 backdrop-blur-md rounded-xl border border-white/60 shadow-xs shrink-0 my-0.5">
+    <div class="flex items-center gap-2">
+      <span class="text-[9px] font-black uppercase text-emerald-950 bg-emerald-100 px-2 py-0.5 rounded-md">Push Lane</span>
+      <span class="text-[10px] text-slate-600 font-bold hidden sm:inline">Push tiles into columns to displace and match!</span>
+    </div>
+
+    <!-- Active Tile Display -->
+    <div class="flex items-center gap-2">
+      <span class="text-[10px] font-black text-slate-600 uppercase tracking-tight">Active Pusher:</span>
+      <div id="active-pusher-tile" class="w-7 h-9 sm:w-9 sm:h-11 mj-tile-box mj-face-cream p-0.5 flex items-center justify-center shadow-md border border-emerald-400 anim-pop-highlight"></div>
+      <span id="pusher-animal-text" class="text-xs font-black text-slate-800">Shiba Inu</span>
+    </div>
+
+    <!-- Turn indicator -->
+    <div id="turn-banner-card" class="bg-emerald-600 border border-white text-white rounded-lg px-2.5 py-1 shadow-xs flex items-center gap-1.5">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
+      <span id="turn-title" class="text-[10px] font-black uppercase tracking-wider">Your Turn</span>
+    </div>
+  </section>
+
+  <!-- MAIN GAME BOARD: SIDE BY SIDE FOR BOTH PLAYERS -->
+  <main id="capture-area" class="w-full max-w-6xl bg-[#b1cc81] border-2 border-[#9ebb6e] rounded-xl p-1.5 sm:p-2 shadow-md grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 flex-1 min-h-0 overflow-hidden relative">
+
+    <!-- LEFT / OPPONENT BOARD AREA (Player 2 / AI) -->
+    <section class="w-full flex flex-col h-full bg-[#a3c473] p-1.5 rounded-xl border border-[#8fad5e] overflow-hidden min-h-0">
+      <div class="w-full flex justify-between items-center px-1 mb-1 shrink-0 h-6">
+        <span class="text-[10px] sm:text-xs font-black text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+          <span id="opp-label-title">Player 2 Grid</span>
+          <span id="opp-lock-status" class="text-[8.5px] bg-emerald-800/10 text-emerald-900 px-1.5 py-0.2 rounded font-mono">6x7</span>
+        </span>
+        <span id="opp-turn-pill" class="text-[9px] font-bold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full shadow-xs">Waiting</span>
+      </div>
+
+      <!-- Opponent Column Lock Headers -->
+      <div id="opp-col-reservations" class="grid grid-cols-7 gap-1 w-full px-0.5 mb-1 shrink-0 h-6"></div>
+
+      <!-- Opponent Directional / Spacer Row (Matches Right Board Height Exactly) -->
+      <div class="grid grid-cols-7 gap-1 w-full px-0.5 mb-1 shrink-0 h-6 sm:h-7">
+        <div class="col-span-7 flex items-center justify-center text-[9.5px] font-bold text-emerald-900/60 bg-emerald-700/10 rounded-lg">Opponent Receiving Lane</div>
+      </div>
+
+      <!-- Opponent Grid (6 Rows x 7 Columns) -->
+      <div id="opp-grid" class="grid grid-cols-7 gap-1 w-full bg-[#95b963] p-1 rounded-lg shadow-inner border border-[#83a652] flex-1 min-h-0 items-center justify-items-center">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- RIGHT / PLAYER BOARD AREA (Player 1) -->
+    <section class="w-full flex flex-col h-full bg-[#a3c473] p-1.5 rounded-xl border border-[#8fad5e] overflow-hidden min-h-0">
+      <div class="w-full flex justify-between items-center px-1 mb-1 shrink-0 h-6">
+        <span class="text-[10px] sm:text-xs font-black text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+          <span id="player-label-title">Player 1 Grid (You)</span>
+          <span class="text-[8.5px] bg-emerald-800/10 text-emerald-900 px-1.5 py-0.2 rounded font-mono">6x7</span>
+        </span>
+        <span id="player-turn-pill" class="text-[9px] font-black text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full shadow-xs">Active</span>
+      </div>
+
+      <!-- Player Column Lock Headers -->
+      <div id="col-reservations" class="grid grid-cols-7 gap-1 w-full px-0.5 mb-1 shrink-0 h-6"></div>
+
+      <!-- Directional Push Arrows Row -->
+      <div id="arrow-row" class="grid grid-cols-7 gap-1 w-full px-0.5 mb-1 shrink-0 h-6 sm:h-7"></div>
+
+      <!-- Player Grid (6 Rows x 7 Columns) -->
+      <div id="player-grid" class="grid grid-cols-7 gap-1 w-full bg-[#95b963] p-1 rounded-lg shadow-inner border border-[#83a652] flex-1 min-h-0 relative items-center justify-items-center">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- TURN TRANSITION POPUP NOTIFICATION -->
+    <div id="turn-toast" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-slate-900/90 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-2xl shadow-2xl border border-white/20 anim-banner pointer-events-none text-center">
+      Opponent Tile! Turn Passed!
+    </div>
+  </main>
+
+  <!-- CONTROLS & BUG SNAPSHOT FOOTER (Compact Height) -->
+  <footer class="w-full max-w-sm sm:max-w-md py-1 flex items-center justify-between gap-1.5 px-1 shrink-0">
+    <button id="btn-screenshot" class="flex-1 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-black text-[11px] py-1.5 px-2.5 rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition border border-teal-300/40">
+      <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+      <span>📸 Snapshot Bug Report</span>
+    </button>
+    <button id="btn-toggle-log" class="bg-white/80 hover:bg-white text-slate-800 font-bold text-[11px] py-1.5 px-2.5 rounded-xl shadow-xs border border-slate-300 active:scale-95 transition">
+      ⚙️ State Log
+    </button>
+  </footer>
+
+  <!-- DIAGNOSTIC STATE LOG DRAWER -->
+  <div id="log-drawer" class="hidden w-full max-w-sm sm:max-w-md bg-slate-900/95 text-emerald-400 font-mono text-[10px] p-3 rounded-2xl mt-2 border border-slate-700 shadow-2xl overflow-x-auto max-h-44">
+    <div class="flex items-center justify-between border-b border-slate-700 pb-1 mb-1">
+      <span class="font-bold text-white uppercase tracking-wider">Live Diagnostics Payload</span>
+      <button id="btn-clear-logs" class="text-slate-400 hover:text-white">[Clear]</button>
+    </div>
+    <div id="log-content" class="whitespace-pre-wrap leading-tight">System initialized. Ready for Tui Tui Le push...</div>
+  </div>
+
+  <!-- SCREENSHOT PREVIEW MODAL -->
+  <div id="screenshot-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-4 shadow-2xl flex flex-col items-center gap-3">
+      <div class="flex justify-between items-center w-full border-b pb-2">
+        <h3 class="font-black text-slate-800 text-sm sm:text-base flex items-center gap-1.5">
+          <span>📸</span> Mahjong State Snapshot
+        </h3>
+        <button id="btn-close-modal" class="text-slate-400 hover:text-slate-700 font-bold text-xl leading-none">&times;</button>
+      </div>
+
+      <div class="w-full bg-slate-100 rounded-xl overflow-hidden border border-slate-200 max-h-64 flex items-center justify-center">
+        <img id="modal-img-preview" src="" alt="Snapshot" class="max-h-64 object-contain w-auto rounded-lg shadow-sm" />
+      </div>
+
+      <div class="flex w-full gap-2">
+        <a id="btn-download-img" href="#" download="tui_tui_le_snapshot.png" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-2.5 rounded-xl text-center shadow-md active:scale-95 transition">
+          📥 Save Image
+        </a>
+        <button id="btn-copy-payload" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-2.5 rounded-xl text-center shadow-md active:scale-95 transition">
+          📋 Copy State JSON
+        </button>
+      </div>
+      <div id="copy-confirm-text" class="text-[10px] text-emerald-600 font-bold hidden">Diagnostic payload copied to clipboard!</div>
+    </div>
+  </div>
+
+  <!-- COMPLETE SCRIPT: GRAPHICS, TUI TUI LE RULES, AI, AUDIO, SNAPSHOT -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    /* =================================================================
+       1. 2D FLAT ANIMAL ASSETS (Vector SVGs)
+       ================================================================= */
+    const ANIMAL_DEFS = {
+      dog: {
+        name: "Shiba Inu",
+        render: () => `
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <ellipse cx="28" cy="24" rx="12" ry="18" fill="#e08638" transform="rotate(-20 28 24)"/>
+            <ellipse cx="28" cy="24" rx="7" ry="11" fill="#f8cfab" transform="rotate(-20 28 24)"/>
+            <ellipse cx="72" cy="24" rx="12" ry="18" fill="#e08638" transform="rotate(20 72 24)"/>
+            <ellipse cx="72" cy="24" rx="7" ry="11" fill="#f8cfab" transform="rotate(20 72 24)"/>
+            <ellipse cx="50" cy="56" rx="38" ry="34" fill="#f39c42"/>
+            <path d="M 22 56 Q 36 78 50 78 Q 64 78 78 56 Q 66 42 50 48 Q 34 42 22 56 Z" fill="#ffffff"/>
+            <ellipse cx="36" cy="52" rx="4.5" ry="6.5" fill="#24140b"/>
+            <circle cx="38" cy="49" r="2" fill="#ffffff"/>
+            <ellipse cx="64" cy="52" rx="4.5" ry="6.5" fill="#24140b"/>
+            <circle cx="66" cy="49" r="2" fill="#ffffff"/>
+            <ellipse cx="50" cy="62" rx="5" ry="3.5" fill="#26170d"/>
+            <path d="M 45 66 Q 50 72 55 66" stroke="#26170d" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            <path d="M 28 84 Q 50 96 72 84 Q 50 91 28 84 Z" fill="#cf3c3c"/>
+          </svg>`
+      },
+      cat: {
+        name: "Calico Cat",
+        render: () => `
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <polygon points="18,14 36,36 12,38" fill="#e89345"/>
+            <polygon points="20,18 32,34 16,35" fill="#fbc5ba"/>
+            <polygon points="82,14 64,36 88,38" fill="#4d4444"/>
+            <polygon points="80,18 68,34 84,35" fill="#fbc5ba"/>
+            <ellipse cx="50" cy="56" rx="36" ry="32" fill="#ffffff"/>
+            <path d="M 50 24 Q 78 26 86 54 Q 74 62 60 40 Z" fill="#4d4444"/>
+            <path d="M 50 24 Q 22 28 14 54 Q 28 60 40 40 Z" fill="#e89345"/>
+            <ellipse cx="35" cy="53" rx="4" ry="5.5" fill="#222"/>
+            <circle cx="36" cy="51" r="1.5" fill="#fff"/>
+            <ellipse cx="65" cy="53" rx="4" ry="5.5" fill="#222"/>
+            <circle cx="66" cy="51" r="1.5" fill="#fff"/>
+            <polygon points="47,62 53,62 50,66" fill="#f5859e"/>
+            <path d="M 44 68 Q 50 73 56 68" stroke="#333" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <ellipse cx="26" cy="60" rx="4" ry="2" fill="#ffb4be" opacity="0.6"/>
+            <ellipse cx="74" cy="60" rx="4" ry="2" fill="#ffb4be" opacity="0.6"/>
+          </svg>`
+      },
+      bunny: {
+        name: "Blossom Bunny",
+        render: () => `
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <ellipse cx="33" cy="24" rx="9" ry="22" fill="#eed9cc" transform="rotate(-8 33 24)"/>
+            <ellipse cx="33" cy="24" rx="5" ry="16" fill="#f7b7bf" transform="rotate(-8 33 24)"/>
+            <ellipse cx="67" cy="24" rx="9" ry="22" fill="#eed9cc" transform="rotate(8 67 24)"/>
+            <ellipse cx="67" cy="24" rx="5" ry="16" fill="#f7b7bf" transform="rotate(8 67 24)"/>
+            <ellipse cx="50" cy="62" rx="34" ry="31" fill="#eed9cc"/>
+            <circle cx="68" cy="38" r="7" fill="#ff7690"/>
+            <circle cx="68" cy="38" r="3" fill="#ffe96b"/>
+            <ellipse cx="38" cy="60" rx="3.8" ry="5.5" fill="#2d1d1a"/>
+            <circle cx="39" cy="58" r="1.6" fill="#ffffff"/>
+            <ellipse cx="62" cy="60" rx="3.8" ry="5.5" fill="#2d1d1a"/>
+            <circle cx="63" cy="58" r="1.6" fill="#ffffff"/>
+            <polygon points="48,68 52,68 50,71" fill="#ff708c"/>
+            <ellipse cx="28" cy="67" rx="5" ry="3" fill="#ff99aa" opacity="0.6"/>
+            <ellipse cx="72" cy="67" rx="5" ry="3" fill="#ff99aa" opacity="0.6"/>
+          </svg>`
+      },
+      hamster: {
+        name: "Seed Hamster",
+        render: () => `
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <circle cx="24" cy="32" r="11" fill="#df9753"/>
+            <circle cx="24" cy="32" r="6" fill="#f7b0b8"/>
+            <circle cx="76" cy="32" r="11" fill="#df9753"/>
+            <circle cx="76" cy="32" r="6" fill="#f7b0b8"/>
+            <ellipse cx="50" cy="58" rx="36" ry="32" fill="#df9753"/>
+            <ellipse cx="50" cy="67" rx="26" ry="21" fill="#ffffff"/>
+            <circle cx="35" cy="52" r="5" fill="#241812"/>
+            <circle cx="37" cy="50" r="1.7" fill="#fff"/>
+            <circle cx="65" cy="52" r="5" fill="#241812"/>
+            <circle cx="67" cy="50" r="1.7" fill="#fff"/>
+            <ellipse cx="50" cy="58" rx="3.5" ry="2.5" fill="#f17f96"/>
+            <path d="M 44 74 Q 50 63 56 74 Q 50 87 44 74 Z" fill="#44413f" stroke="#1f1d1c" stroke-width="1.2"/>
+            <line x1="50" y1="67" x2="50" y2="82" stroke="#ffffff" stroke-width="1.2" opacity="0.7"/>
+          </svg>`
+      },
+      redpanda: {
+        name: "Red Panda",
+        render: () => `
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <polygon points="18,18 36,36 14,40" fill="#a83c24"/>
+            <polygon points="22,22 32,34 18,36" fill="#f7e6d7"/>
+            <polygon points="82,18 64,36 86,40" fill="#a83c24"/>
+            <polygon points="78,22 68,34 82,36" fill="#f7e6d7"/>
+            <ellipse cx="50" cy="56" rx="37" ry="31" fill="#b8452a"/>
+            <ellipse cx="27" cy="56" rx="10" ry="12" fill="#fbf2ea"/>
+            <ellipse cx="73" cy="56" rx="10" ry="12" fill="#fbf2ea"/>
+            <circle cx="38" cy="52" r="4.5" fill="#231713"/>
+            <circle cx="39" cy="50" r="1.5" fill="#fff"/>
+            <circle cx="62" cy="52" r="4.5" fill="#231713"/>
+            <circle cx="63" cy="50" r="1.5" fill="#fff"/>
+            <path d="M 34 56 Q 30 68 28 72" stroke="#682113" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 66 56 Q 70 68 72 72" stroke="#682113" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="50" cy="62" rx="4.5" ry="3.5" fill="#241512"/>
+            <ellipse cx="50" cy="74" rx="14" ry="7" fill="#421a12"/>
+          </svg>`
+      },
+      fox: {
+        name: "Kitsune Fox",
+        render: () => `
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <polygon points="16,14 36,36 12,38" fill="#e86b29"/>
+            <polygon points="20,18 32,34 16,35" fill="#ffffff"/>
+            <polygon points="84,14 64,36 88,38" fill="#e86b29"/>
+            <polygon points="80,18 68,34 84,35" fill="#ffffff"/>
+            <ellipse cx="50" cy="56" rx="36" ry="30" fill="#e86b29"/>
+            <path d="M 18 54 Q 35 78 50 78 Q 65 78 82 54 Q 50 48 18 54 Z" fill="#ffffff"/>
+            <ellipse cx="34" cy="53" rx="4" ry="5.5" fill="#221814" transform="rotate(-5 34 53)"/>
+            <circle cx="35" cy="51" r="1.5" fill="#fff"/>
+            <ellipse cx="66" cy="53" rx="4" ry="5.5" fill="#221814" transform="rotate(5 66 53)"/>
+            <circle cx="67" cy="51" r="1.5" fill="#fff"/>
+            <ellipse cx="50" cy="66" rx="4.5" ry="3" fill="#1b120f"/>
+            <ellipse cx="68" cy="24" rx="7" ry="12" fill="#58a846" transform="rotate(45 68 24)"/>
+          </svg>`
+      },
+      persian: {
+        name: "Persian Cat",
+        render: () => `
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <polygon points="20,20 34,34 18,36" fill="#c49f84"/>
+            <polygon points="80,20 66,34 82,36" fill="#c49f84"/>
+            <circle cx="50" cy="56" r="35" fill="#d9b69b"/>
+            <ellipse cx="22" cy="56" rx="8" ry="14" fill="#d9b69b"/>
+            <ellipse cx="78" cy="56" rx="8" ry="14" fill="#d9b69b"/>
+            <ellipse cx="36" cy="52" rx="4" ry="4" fill="#261713"/>
+            <circle cx="37" cy="50" r="1.5" fill="#fff"/>
+            <ellipse cx="64" cy="52" rx="4" ry="4" fill="#261713"/>
+            <circle cx="65" cy="50" r="1.5" fill="#fff"/>
+            <line x1="30" y1="46" x2="42" y2="49" stroke="#52392c" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="70" y1="46" x2="58" y2="49" stroke="#52392c" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="50" cy="59" rx="3.5" ry="2.5" fill="#99584d"/>
+            <path d="M 46 65 Q 50 62 54 65" stroke="#52392c" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>`
+      },
+      panda: {
+        name: "Panda Bear",
+        render: () => `
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <circle cx="22" cy="26" r="12" fill="#262628"/>
+            <circle cx="78" cy="26" r="12" fill="#262628"/>
+            <ellipse cx="50" cy="56" rx="36" ry="32" fill="#ffffff"/>
+            <ellipse cx="33" cy="52" rx="9" ry="12" fill="#262628" transform="rotate(-15 33 52)"/>
+            <ellipse cx="67" cy="52" rx="9" ry="12" fill="#262628" transform="rotate(15 67 52)"/>
+            <circle cx="34" cy="51" r="3.5" fill="#ffffff"/>
+            <circle cx="35" cy="51" r="1.8" fill="#111"/>
+            <circle cx="66" cy="51" r="3.5" fill="#ffffff"/>
+            <circle cx="65" cy="51" r="1.8" fill="#111"/>
+            <ellipse cx="50" cy="62" rx="4.5" ry="3.5" fill="#1a1a1a"/>
+            <line x1="68" y1="72" x2="78" y2="60" stroke="#489938" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="74" cy="63" r="2.5" fill="#69b85a"/>
+          </svg>`
+      }
+    };
+    const ANIMAL_LIST = Object.keys(ANIMAL_DEFS);
+
+    /* =================================================================
+       2. ASMR SOUND ENGINE
+       ================================================================= */
+    let sfxOn = true;
+    let synth = null;
+
+    function initAudioEngine() {
+      if (!synth && window.Tone) {
+        synth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: "triangle8" },
+          envelope: { attack: 0.002, decay: 0.12, sustain: 0.02, release: 0.1 }
+        }).toDestination();
+        synth.volume.value = -7;
+      }
+    }
+
+    function playMahjongSound(event) {
+      if (!sfxOn || !window.Tone) return;
+      try {
+        if (Tone.context.state !== 'running') Tone.start();
+        initAudioEngine();
+        if (event === 'push') {
+          // Tactile wooden/ceramic tile clack
+          synth.triggerAttackRelease("E4", "32n");
+        } else if (event === 'match') {
+          synth.triggerAttackRelease(["C5", "G5", "C6"], "16n");
+        } else if (event === 'turn_pass') {
+          synth.triggerAttackRelease(["A3", "C4"], "16n");
+        }
+      } catch (e) {
+        console.warn("Audio exception:", e);
+      }
+    }
+
+    /* =================================================================
+       3. TUI TUI LE GAME ENGINE & MULTIPLAYER STATE
+       ================================================================= */
+    const COLS = 7;
+    const ROWS = 6;
+    const PUBLIC_SITE_URL = "https://eclectic-entremet-a3f40a.netlify.app";
+
+    let playerGrid = [];
+    let oppGrid = [];
+    let playerColumnLocks = new Array(COLS).fill(null);
+    let oppColumnLocks = new Array(COLS).fill(null);
+
+    // Active tile waiting in the push lane
+    let activePusher = null; // { animal: string, owner: 'p1' | 'p2' }
+    let currentTurn = 'p1';   // 'p1' or 'p2'
+    let myRole = 'p1';        // 'p1' (host/local) or 'p2' (guest)
+    let gameMode = 'ai';      // 'ai' | 'pass_play' | 'online'
+    let score = 0;
+    let oppScore = 0;
+    let logHistory = [];
+
+    // PeerJS Cross-Device P2P WebRTC Connection
+    let peer = null;
+    let activeConn = null;
+    let currentRoomCode = null;
+
+    // Cloud Room Synchronization (Firebase Firestore if available)
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'mahjong-tui-tui-le';
+    let db = null;
+    let auth = null;
+    let authUser = null;
+    let firestoreUnsubscribe = null;
+    let isPushingAnimation = false; // Prevents race condition double-push
+
+    if (typeof __firebase_config !== 'undefined') {
+      try {
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        
+        const initAuth = async () => {
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+          authUser = auth.currentUser;
+          recordLog(`Authenticated for cloud synchronization.`);
+        };
+        initAuth().catch(err => console.warn("Auth initialization:", err));
+      } catch (err) {
+        console.warn("Cloud connection setup:", err);
+      }
+    }
+
+    // Local multi-tab channel
+    let roomChannel = null;
+
+    /* =================================================================
+       FRIEND SYSTEM & LIVE PRESENCE STATE
+       ================================================================= */
+    let myUserTag = '';
+    let myUsername = 'Player';
+    let savedFriends = []; // Array of { tag: string, name: string }
+    let livePresenceMap = {}; // { [tag]: { online: boolean, lastSeen: number, name: string, activeRoom: string } }
+    let presenceHeartbeatInterval = null;
+    let pendingChallengeRoom = null;
+    let sharedPresenceChannel = null;
+    let sharedInviteChannel = null;
+    let mqttClient = null;
+    const MQTT_BROKER = "broker.hivemq.com";
+    const MQTT_PORT = 8884; // Secure WSS port
+    const MQTT_TOPIC_PREFIX = "push_mahjong_game_v2";
+
+    // Multi-tier storage persistence helpers
+    function getStoredPermanentTag() {
+      // 1. Check localStorage
+      try {
+        const val = localStorage.getItem('mj_permanent_user_tag');
+        if (val && val.trim().length >= 4) return val.trim().toUpperCase();
+      } catch (e) {}
+
+      // 2. Check document.cookie backup
+      try {
+        const match = document.cookie.match(/(?:^|;\s*)mj_permanent_user_tag=([^;]+)/);
+        if (match && match[1]) return decodeURIComponent(match[1]).trim().toUpperCase();
+      } catch (e) {}
+
+      // 3. Check sessionStorage backup
+      try {
+        const val = sessionStorage.getItem('mj_permanent_user_tag');
+        if (val && val.trim().length >= 4) return val.trim().toUpperCase();
+      } catch (e) {}
+
+      return null;
+    }
+
+    function saveStoredPermanentTag(tag) {
+      if (!tag) return;
+      let cleanTag = tag.trim().toUpperCase().replace(/[^A-Z0-9#-]/g, '');
+      if (!cleanTag.startsWith('#')) cleanTag = '#' + cleanTag;
+      myUserTag = cleanTag;
+
+      try { localStorage.setItem('mj_permanent_user_tag', cleanTag); } catch (e) {}
+      try { sessionStorage.setItem('mj_permanent_user_tag', cleanTag); } catch (e) {}
+      try {
+        // Set cookie with 10-year expiration to ensure permanence
+        const d = new Date();
+        d.setTime(d.getTime() + (3650 * 24 * 60 * 60 * 1000));
+        document.cookie = `mj_permanent_user_tag=${encodeURIComponent(cleanTag)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+      } catch (e) {}
+
+      const displayTag = document.getElementById('display-my-tag');
+      if (displayTag) displayTag.textContent = myUserTag;
+      const customTagInput = document.getElementById('input-custom-tag');
+      if (customTagInput) customTagInput.value = myUserTag;
+    }
+
+    function initIdentityAndFriends() {
+      // Load or generate unique permanent friend tag
+      let storedTag = getStoredPermanentTag();
+      if (!storedTag) {
+        const rand = Math.floor(1000 + Math.random() * 9000);
+        const prefix = ANIMAL_LIST[Math.floor(Math.random() * ANIMAL_LIST.length)].toUpperCase().slice(0, 3);
+        storedTag = `#${prefix}-${rand}`;
+        saveStoredPermanentTag(storedTag);
+      } else {
+        myUserTag = storedTag;
+      }
+
+      try {
+        let storedName = localStorage.getItem('mj_username');
+        if (!storedName) {
+          storedName = `Player-${myUserTag.replace(/[^A-Za-z0-9]/g, '').slice(-4)}`;
+          localStorage.setItem('mj_username', storedName);
+        }
+        myUsername = storedName;
+
+        const storedFriends = localStorage.getItem('mj_friends_list');
+        if (storedFriends) {
+          savedFriends = JSON.parse(storedFriends);
+        }
+      } catch (e) {
+        myUsername = 'Player';
+      }
+
+      const nameInput = document.getElementById('input-my-username');
+      if (nameInput) nameInput.value = myUsername;
+      const initialEl = document.getElementById('avatar-initial');
+      if (initialEl) initialEl.textContent = (myUsername.charAt(0) || 'P').toUpperCase();
+
+      const displayTag = document.getElementById('display-my-tag');
+      if (displayTag) displayTag.textContent = myUserTag;
+      const customTagInput = document.getElementById('input-custom-tag');
+      if (customTagInput) customTagInput.value = myUserTag;
+
+      // Start zero-config cloud signaling & presence listeners
+      initCloudSignalingMesh();
+      startPresenceBroadcast();
+      renderFriendsList();
+    }
+
+    /* Zero-config open Pub/Sub cloud signaling mesh for phone <-> PC sync */
+    function initCloudSignalingMesh() {
+      if (!window.Paho) return;
+
+      try {
+        const clientId = `mj_${myUserTag.replace(/[^A-Za-z0-9]/g, '')}_${Math.floor(Math.random()*10000)}`;
+        mqttClient = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, clientId);
+
+        mqttClient.onConnectionLost = (responseObject) => {
+          if (responseObject.errorCode !== 0) {
+            recordLog(`Cloud mesh re-establishing: ${responseObject.errorMessage}`);
+            setTimeout(initCloudSignalingMesh, 4000);
+          }
+        };
+
+        mqttClient.onMessageArrived = (message) => {
+          try {
+            const payload = JSON.parse(message.payloadString);
+            if (!payload || !payload.type) return;
+
+            if (payload.type === 'HEARTBEAT') {
+              handlePresenceUpdate(payload);
+            } else if (payload.type === 'GAME_CHALLENGE' && payload.targetTag === myUserTag) {
+              promptIncomingChallenge(payload);
+            }
+          } catch (e) {}
+        };
+
+        mqttClient.connect({
+          useSSL: true,
+          timeout: 4,
+          keepAliveInterval: 30,
+          onSuccess: () => {
+            recordLog(`Cloud Friend Mesh connected via WSS.`);
+            // Subscribe to broad presence and targeted invite channel
+            const cleanTag = myUserTag.replace(/[^A-Za-z0-9_-]/g, '_');
+            mqttClient.subscribe(`${MQTT_TOPIC_PREFIX}/presence/#`, { qos: 0 });
+            mqttClient.subscribe(`${MQTT_TOPIC_PREFIX}/invites/${cleanTag}`, { qos: 1 });
+            broadcastMeshHeartbeat();
+          },
+          onFailure: (err) => {
+            recordLog(`Cloud mesh fallback active: ${err.errorMessage || 'Ready'}`);
+          }
+        });
+      } catch (err) {
+        console.warn("MQTT Mesh init notice:", err);
+      }
+    }
+
+    function broadcastMeshHeartbeat() {
+      if (!mqttClient || !mqttClient.isConnected()) return;
+
+      try {
+        const cleanTag = myUserTag.replace(/[^A-Za-z0-9_-]/g, '_');
+        const payload = {
+          type: 'HEARTBEAT',
+          tag: myUserTag,
+          name: myUsername,
+          lastSeen: Date.now(),
+          activeRoom: currentRoomCode || null
+        };
+
+        const msg = new Paho.MQTT.Message(JSON.stringify(payload));
+        msg.destinationName = `${MQTT_TOPIC_PREFIX}/presence/${cleanTag}`;
+        msg.qos = 0;
+        mqttClient.send(msg);
+      } catch (e) {}
+    }
+
+    function saveFriendsList() {
+      try {
+        localStorage.setItem('mj_friends_list', JSON.stringify(savedFriends));
+      } catch (e) {}
+      renderFriendsList();
+    }
+
+    function renderFriendsList() {
+      const container = document.getElementById('friends-list-container');
+      const countBadge = document.getElementById('online-friends-count');
+      if (!container) return;
+
+      container.innerHTML = '';
+      const now = Date.now();
+      let onlineCount = 0;
+
+      if (savedFriends.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-5 px-3 text-xs font-bold text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center gap-1">
+            <span class="text-xl">✨</span>
+            <span>No friends added yet.</span>
+            <span class="text-[10px] text-slate-500 font-normal">Share your Friend Tag with a friend to play instantly!</span>
+          </div>
+        `;
+        if (countBadge) countBadge.textContent = '0';
+        return;
+      }
+
+      savedFriends.forEach((friend, idx) => {
+        const presence = livePresenceMap[friend.tag];
+        // Active if heartbeat received within last 16 seconds
+        const isOnline = presence && (now - presence.lastSeen < 16000);
+        const isInGame = isOnline && presence.activeRoom;
+        if (isOnline) onlineCount++;
+
+        let statusColor = "bg-slate-300";
+        let statusText = "Offline";
+        let statusTextColor = "text-slate-400";
+
+        if (isInGame) {
+          statusColor = "bg-amber-400 animate-pulse";
+          statusText = "In Match";
+          statusTextColor = "text-amber-700 font-bold";
+        } else if (isOnline) {
+          statusColor = "bg-emerald-500 shadow-sm animate-pulse";
+          statusText = "Online & Ready";
+          statusTextColor = "text-emerald-700 font-bold";
+        }
+
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-2.5 rounded-2xl bg-white border border-slate-200/80 text-xs shadow-xs hover:border-indigo-200 transition';
+        row.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="relative">
+              <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-black text-xs flex items-center justify-center">
+                ${(friend.name || 'F').charAt(0).toUpperCase()}
+              </div>
+              <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${statusColor}"></span>
+            </div>
+            <div>
+              <div class="font-black text-slate-800 flex items-center gap-1.5 leading-none">
+                <span>${presence?.name || friend.name || 'Friend'}</span>
+                <span class="text-[9.5px] font-mono text-slate-400 bg-slate-100 px-1 py-0.2 rounded">${friend.tag}</span>
+              </div>
+              <div class="text-[9px] ${statusTextColor} mt-1 flex items-center gap-1">
+                <span>${statusText}</span>
+                ${isInGame ? `<span class="text-[8px] bg-amber-100 text-amber-800 px-1 rounded font-mono">${presence.activeRoom}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            ${isOnline ? `
+              <button class="btn-challenge-friend bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] px-3 py-1.5 rounded-xl active:scale-95 shadow-xs transition flex items-center gap-1" data-tag="${friend.tag}" data-name="${presence?.name || friend.name}">
+                <span>🎮</span> Challenge
+              </button>
+            ` : ''}
+            <button class="btn-remove-friend text-slate-300 hover:text-rose-500 font-bold text-base px-1.5 py-0.5 transition" data-index="${idx}" title="Remove friend">✕</button>
+          </div>
+        `;
+
+        container.appendChild(row);
+      });
+
+      if (countBadge) countBadge.textContent = onlineCount.toString();
+
+      // Hook up Challenge Buttons
+      container.querySelectorAll('.btn-challenge-friend').forEach(btn => {
+        btn.onclick = () => {
+          const targetTag = btn.getAttribute('data-tag');
+          const targetName = btn.getAttribute('data-name');
+          sendGameChallenge(targetTag, targetName);
+        };
+      });
+
+      // Hook up Remove Buttons
+      container.querySelectorAll('.btn-remove-friend').forEach(btn => {
+        btn.onclick = () => {
+          const index = parseInt(btn.getAttribute('data-index'), 10);
+          savedFriends.splice(index, 1);
+          saveFriendsList();
+        };
+      });
+    }
+
+    function startPresenceBroadcast() {
+      // 1. Single long-lived cross-tab local channel
+      if (!sharedPresenceChannel) {
+        try {
+          sharedPresenceChannel = new BroadcastChannel('mj_presence_channel');
+          sharedPresenceChannel.onmessage = (e) => {
+            if (!e.data || !e.data.tag) return;
+            handlePresenceUpdate(e.data);
+          };
+        } catch (e) {
+          console.warn("BroadcastChannel not supported in this environment");
+        }
+      }
+
+      // 2. Broadcast own heartbeat every 3.5 seconds
+      const sendHeartbeat = () => {
+        const payload = {
+          tag: myUserTag,
+          name: myUsername,
+          lastSeen: Date.now(),
+          activeRoom: currentRoomCode || null
+        };
+
+        try {
+          if (sharedPresenceChannel) sharedPresenceChannel.postMessage(payload);
+          localStorage.setItem(`mj_presence_${myUserTag}`, JSON.stringify(payload));
+        } catch (e) {}
+
+        // Broadcast to zero-config cloud mesh (cross-device phone <-> PC)
+        broadcastMeshHeartbeat();
+
+        // Cloud presence if connected (sanitizing # for Firestore doc keys)
+        if (db && authUser) {
+          try {
+            const safeDocKey = myUserTag.replace(/[^a-zA-Z0-9_-]/g, '_');
+            const presenceRef = doc(db, 'artifacts', appId, 'public', 'data', 'presence', safeDocKey);
+            setDoc(presenceRef, payload, { merge: true }).catch((err) => {
+              recordLog(`Presence sync notice: ${err.message}`);
+            });
+          } catch (e) {}
+        }
+      };
+
+      sendHeartbeat();
+      if (presenceHeartbeatInterval) clearInterval(presenceHeartbeatInterval);
+      presenceHeartbeatInterval = setInterval(sendHeartbeat, 3500);
+
+      // 3. Listen to cloud presence for friends
+      if (db && authUser) {
+        savedFriends.forEach(friend => {
+          try {
+            const safeFriendKey = friend.tag.replace(/[^a-zA-Z0-9_-]/g, '_');
+            const friendRef = doc(db, 'artifacts', appId, 'public', 'data', 'presence', safeFriendKey);
+            onSnapshot(friendRef, (snap) => {
+              if (snap.exists()) {
+                handlePresenceUpdate(snap.data());
+              }
+            }, (err) => {
+              console.warn("Friend presence watch error:", err);
+            });
+          } catch (e) {}
+        });
+      }
+
+      // Check localStorage pulses
+      window.addEventListener('storage', (e) => {
+        if (e.key && e.key.startsWith('mj_presence_') && e.newValue) {
+          try {
+            handlePresenceUpdate(JSON.parse(e.newValue));
+          } catch (err) {}
+        }
+      });
+
+      // Periodically refresh friends list online status UI
+      setInterval(renderFriendsList, 4000);
+    }
+
+    function handlePresenceUpdate(data) {
+      if (!data || !data.tag || data.tag === myUserTag) return;
+      livePresenceMap[data.tag] = {
+        name: data.name,
+        lastSeen: data.lastSeen,
+        activeRoom: data.activeRoom
+      };
+      renderFriendsList();
+    }
+
+    function sendGameChallenge(targetTag, targetName = "Friend") {
+      const roomCode = generateRoomCode();
+      currentRoomCode = roomCode;
+      gameMode = 'online';
+      myRole = 'p1';
+      currentTurn = 'p1';
+
+      setupRoomChannel(roomCode, true);
+      document.getElementById('room-code-badge').classList.remove('hidden');
+      document.getElementById('active-code-display').textContent = roomCode;
+      updateLobbyUI(`Invited ${targetName}! Waiting...`, 'p1');
+      showTurnToast(`Challenging ${targetName}...`);
+
+      // Dispatch invitation payload
+      const invitePayload = {
+        type: 'GAME_CHALLENGE',
+        fromTag: myUserTag,
+        fromName: myUsername,
+        targetTag: targetTag,
+        roomCode: roomCode,
+        timestamp: Date.now()
+      };
+
+      // 1. Local cross-tab
+      try {
+        if (!sharedInviteChannel) {
+          sharedInviteChannel = new BroadcastChannel('mj_invite_channel');
+        }
+        sharedInviteChannel.postMessage(invitePayload);
+      } catch (e) {}
+
+      // 2. Cloud MQTT cross-device mesh
+      if (mqttClient && mqttClient.isConnected()) {
+        try {
+          const cleanTarget = targetTag.replace(/[^A-Za-z0-9_-]/g, '_');
+          const msg = new Paho.MQTT.Message(JSON.stringify(invitePayload));
+          msg.destinationName = `${MQTT_TOPIC_PREFIX}/invites/${cleanTarget}`;
+          msg.qos = 1;
+          mqttClient.send(msg);
+        } catch (e) {}
+      }
+
+      // 3. Firestore fallback
+      if (db && authUser) {
+        try {
+          const safeTargetKey = targetTag.replace(/[^a-zA-Z0-9_-]/g, '_');
+          const inviteRef = doc(db, 'artifacts', appId, 'public', 'data', 'invites', safeTargetKey);
+          setDoc(inviteRef, invitePayload).catch((err) => {
+            recordLog(`Invite dispatch notice: ${err.message}`);
+          });
+        } catch (e) {}
+      }
+
+      recordLog(`Sent instant match challenge to ${targetTag} (Room: ${roomCode})`);
+      document.getElementById('friends-modal').classList.add('hidden');
+    }
+
+    function listenForChallenges() {
+      // Local tab channel
+      if (!sharedInviteChannel) {
+        try {
+          sharedInviteChannel = new BroadcastChannel('mj_invite_channel');
+          sharedInviteChannel.onmessage = (e) => {
+            if (!e.data || e.data.targetTag !== myUserTag) return;
+            promptIncomingChallenge(e.data);
+          };
+        } catch (e) {}
+      }
+
+      // Cloud invitation listener
+      if (db && authUser) {
+        try {
+          const safeMyKey = myUserTag.replace(/[^a-zA-Z0-9_-]/g, '_');
+          const inviteRef = doc(db, 'artifacts', appId, 'public', 'data', 'invites', safeMyKey);
+          onSnapshot(inviteRef, (snap) => {
+            if (snap.exists()) {
+              const data = snap.data();
+              if (data && data.timestamp && Date.now() - data.timestamp < 30000) {
+                promptIncomingChallenge(data);
+              }
+            }
+          }, (err) => {
+            console.warn("Cloud invite listener:", err);
+          });
+        } catch (e) {}
+      }
+    }
+
+    function promptIncomingChallenge(data) {
+      pendingChallengeRoom = data.roomCode;
+      const popup = document.getElementById('challenge-popup');
+      const callerText = document.getElementById('challenge-caller-name');
+      if (callerText) callerText.textContent = `${data.fromName || 'Friend'} (${data.fromTag}) challenged you!`;
+      if (popup) popup.classList.remove('hidden');
+      playMahjongSound('match');
+    }
+
+    function recordLog(msg) {
+      const now = new Date().toTimeString().split(' ')[0];
+      const entry = `[${now}] ${msg}`;
+      logHistory.unshift(entry);
+      if (logHistory.length > 50) logHistory.pop();
+      const el = document.getElementById('log-content');
+      if (el) el.textContent = logHistory.join('\n');
+    }
+
+    function pickRandomAnimal() {
+      return ANIMAL_LIST[Math.floor(Math.random() * ANIMAL_LIST.length)];
+    }
+
+    /* Initialize boards: 100% blind facedown tiles */
+    function initTuiTuiLeGame(syncState = null) {
+      if (syncState) {
+        // Hydrate from host's networked state
+        playerGrid = syncState.playerGrid;
+        oppGrid = syncState.oppGrid;
+        playerColumnLocks = syncState.playerColumnLocks;
+        oppColumnLocks = syncState.oppColumnLocks;
+        activePusher = syncState.activePusher;
+        currentTurn = syncState.currentTurn;
+        score = syncState.score;
+        oppScore = syncState.oppScore;
+        recordLog("Synced full board state.");
+        renderAll();
+        return;
+      }
+
+      playerGrid = [];
+      oppGrid = [];
+      playerColumnLocks = new Array(COLS).fill(null);
+      oppColumnLocks = new Array(COLS).fill(null);
+      score = 0;
+      oppScore = 0;
+      currentTurn = 'p1';
+
+      // Fill player 6x7 grid (facedown)
+      for (let r = 0; r < ROWS; r++) {
+        const row = [];
+        for (let c = 0; c < COLS; c++) {
+          row.push({
+            animal: pickRandomAnimal(),
+            owner: Math.random() > 0.4 ? 'p1' : 'p2',
+            isFlipped: false
+          });
+        }
+        playerGrid.push(row);
+      }
+
+      // Fill opponent 6x7 grid (facedown)
+      for (let r = 0; r < ROWS; r++) {
+        const row = [];
+        for (let c = 0; c < COLS; c++) {
+          row.push({
+            animal: pickRandomAnimal(),
+            owner: Math.random() > 0.4 ? 'p2' : 'p1',
+            isFlipped: false
+          });
+        }
+        oppGrid.push(row);
+      }
+
+      // Spawn initial active pusher tile
+      activePusher = {
+        animal: pickRandomAnimal(),
+        owner: 'p1'
+      };
+
+      recordLog(`Game ready. Active pusher: ${ANIMAL_DEFS[activePusher.animal].name}`);
+      renderAll();
+
+      if (gameMode === 'online') {
+        broadcastNetworkState({
+          type: 'INIT_STATE',
+          state: getFullStateObject()
+        });
+      }
+    }
+
+    function getFullStateObject() {
+      return {
+        playerGrid,
+        oppGrid,
+        playerColumnLocks,
+        oppColumnLocks,
+        activePusher,
+        currentTurn,
+        score,
+        oppScore
+      };
+    }
+
+    /* Render Player & Opponent Grids */
+    function renderGrids() {
+      // Perspective rendering:
+      // In online mode, Guest (p2) sees their board on the bottom and p1 on top.
+      const bottomGridData = (myRole === 'p2') ? oppGrid : playerGrid;
+      const topGridData = (myRole === 'p2') ? playerGrid : oppGrid;
+
+      // Opponent / Top Grid
+      const oppContainer = document.getElementById('opp-grid');
+      oppContainer.innerHTML = '';
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const tile = topGridData[r][c];
+          const div = document.createElement('div');
+          div.className = 'mj-tile-box flex items-center justify-center';
+          if (!tile) {
+            div.className += ' bg-emerald-950/20 rounded';
+          } else if (!tile.isFlipped) {
+            div.className += ' mj-back-jade';
+          } else {
+            div.className += ' mj-face-cream p-0.5';
+            div.innerHTML = ANIMAL_DEFS[tile.animal].render();
+          }
+          oppContainer.appendChild(div);
+        }
+      }
+
+      // Bottom / Active Player Grid
+      const playerContainer = document.getElementById('player-grid');
+      playerContainer.innerHTML = '';
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const tile = bottomGridData[r][c];
+          const div = document.createElement('div');
+          div.className = 'mj-tile-box relative flex items-center justify-center active:scale-95 transition-transform';
+          div.id = `ptile-${r}-${c}`;
+
+          if (!tile) {
+            div.className += ' bg-emerald-950/20 rounded';
+          } else if (!tile.isFlipped) {
+            div.className += ' mj-back-jade hover:brightness-110';
+          } else {
+            div.className += ' mj-face-cream p-0.5';
+            div.innerHTML = ANIMAL_DEFS[tile.animal].render();
+          }
+
+          // Allow direct tile tapping on any column to push or test column match
+          div.onclick = () => {
+            onPushColumn(c);
+          };
+
+          playerContainer.appendChild(div);
+        }
+      }
+    }
+
+    /* Render Column Reservation Lock Badges */
+    function renderColumnLocks() {
+      // Player locks (Right side)
+      const playerLockRow = document.getElementById('col-reservations');
+      if (playerLockRow) {
+        playerLockRow.innerHTML = '';
+        const locks = (myRole === 'p2') ? oppColumnLocks : playerColumnLocks;
+        for (let c = 0; c < COLS; c++) {
+          const lockedAnimal = locks[c];
+          const badge = document.createElement('div');
+          badge.className = 'h-5 sm:h-6 rounded flex items-center justify-center border text-[8px] font-black shadow-xs';
+          if (lockedAnimal) {
+            badge.className += ' bg-amber-100 border-amber-300 text-amber-900 p-0.5';
+            badge.innerHTML = `<div class="w-4 h-4">${ANIMAL_DEFS[lockedAnimal].render()}</div>`;
+            badge.title = `Column ${c+1}: Locked to ${ANIMAL_DEFS[lockedAnimal].name}`;
+          } else {
+            badge.className += ' bg-white/40 border-white/60 text-emerald-900';
+            badge.textContent = `C${c+1}`;
+          }
+          playerLockRow.appendChild(badge);
+        }
+      }
+
+      // Opponent locks (Left side)
+      const oppLockRow = document.getElementById('opp-col-reservations');
+      if (oppLockRow) {
+        oppLockRow.innerHTML = '';
+        const locks = (myRole === 'p2') ? playerColumnLocks : oppColumnLocks;
+        for (let c = 0; c < COLS; c++) {
+          const lockedAnimal = locks[c];
+          const badge = document.createElement('div');
+          badge.className = 'h-5 sm:h-6 rounded flex items-center justify-center border text-[8px] font-black shadow-xs';
+          if (lockedAnimal) {
+            badge.className += ' bg-amber-100 border-amber-300 text-amber-900 p-0.5';
+            badge.innerHTML = `<div class="w-4 h-4">${ANIMAL_DEFS[lockedAnimal].render()}</div>`;
+          } else {
+            badge.className += ' bg-white/40 border-white/60 text-emerald-900';
+            badge.textContent = `C${c+1}`;
+          }
+          oppLockRow.appendChild(badge);
+        }
+      }
+    }
+
+    /* Render Directional Push Arrows for active player */
+    function renderDirectionalArrows() {
+      const arrowRow = document.getElementById('arrow-row');
+      if (!arrowRow) return;
+      arrowRow.innerHTML = '';
+
+      const isMyTurn = (gameMode !== 'online') || (currentTurn === myRole);
+      const activeLocks = (myRole === 'p2') ? oppColumnLocks : playerColumnLocks;
+
+      for (let c = 0; c < COLS; c++) {
+        const btn = document.createElement('button');
+        btn.className = 'w-full h-6 sm:h-7 rounded-lg flex items-center justify-center transition shadow-xs ';
+        
+        // Check if column is locked to a different animal than active pusher
+        const isLockedMismatch = activePusher && activeLocks[c] && (activeLocks[c] !== activePusher.animal);
+
+        if (!isMyTurn) {
+          btn.className += 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-40';
+          btn.innerHTML = `<span class="text-xs">⬇</span>`;
+        } else if (isLockedMismatch) {
+          btn.className += 'bg-rose-100 border border-rose-300 text-rose-600 hover:bg-rose-200';
+          btn.innerHTML = `<span class="text-xs font-black">✕</span>`;
+          btn.title = `Locked to ${ANIMAL_DEFS[activeLocks[c]].name}`;
+        } else {
+          btn.className += 'bg-emerald-500 hover:bg-emerald-400 text-white anim-arrow-bounce active:scale-90';
+          btn.innerHTML = `
+            <svg class="w-3.5 h-3.5 fill-current stroke-current" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v10.586l3.293-3.293a1 1 0 111.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 111.414-1.414L9 14.586V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>`;
+        }
+
+        btn.onclick = () => onPushColumn(c);
+        arrowRow.appendChild(btn);
+      }
+    }
+
+    /* Render Active Pusher Lane & HUD */
+    function updateCenterHUD() {
+      const pusherBox = document.getElementById('active-pusher-tile');
+      const animalText = document.getElementById('pusher-animal-text');
+      const turnTitle = document.getElementById('turn-title');
+      const turnCard = document.getElementById('turn-banner-card');
+      const scoreEl = document.getElementById('score-display');
+      const oppScoreEl = document.getElementById('opp-score-display');
+      const playerPill = document.getElementById('player-turn-pill');
+      const oppPill = document.getElementById('opp-turn-pill');
+
+      if (scoreEl) scoreEl.textContent = score.toString();
+      if (oppScoreEl) oppScoreEl.textContent = oppScore.toString();
+
+      if (activePusher && ANIMAL_DEFS[activePusher.animal]) {
+        if (pusherBox) pusherBox.innerHTML = ANIMAL_DEFS[activePusher.animal].render();
+        if (animalText) animalText.textContent = ANIMAL_DEFS[activePusher.animal].name;
+      }
+
+      const isMyTurn = (gameMode !== 'online') ? (currentTurn === 'p1' || gameMode === 'pass_play') : (currentTurn === myRole);
+      
+      if (turnTitle) {
+        if (gameMode === 'pass_play') {
+          turnTitle.textContent = (currentTurn === 'p1') ? "Player 1 Turn" : "Player 2 Turn";
+        } else if (gameMode === 'online') {
+          turnTitle.textContent = isMyTurn ? "Your Turn!" : "Opponent's Turn";
+        } else {
+          turnTitle.textContent = (currentTurn === 'p1') ? "Your Turn" : "AI Thinking...";
+        }
+      }
+
+      if (turnCard) {
+        if (isMyTurn) {
+          turnCard.className = 'bg-emerald-600 border border-white text-white rounded-lg px-2.5 py-1 shadow-xs flex items-center gap-1.5';
+        } else {
+          turnCard.className = 'bg-slate-700 border border-slate-500 text-slate-200 rounded-lg px-2.5 py-1 shadow-xs flex items-center gap-1.5';
+        }
+      }
+
+      if (playerPill) {
+        const isP1 = (currentTurn === 'p1');
+        playerPill.textContent = isP1 ? 'Active' : 'Waiting';
+        playerPill.className = `text-[9px] font-black px-2 py-0.5 rounded-full shadow-xs ${isP1 ? 'text-emerald-900 bg-emerald-100' : 'text-slate-600 bg-white/70'}`;
+      }
+
+      if (oppPill) {
+        const isP2 = (currentTurn === 'p2');
+        oppPill.textContent = isP2 ? 'Active' : 'Waiting';
+        oppPill.className = `text-[9px] font-black px-2 py-0.5 rounded-full shadow-xs ${isP2 ? 'text-indigo-900 bg-indigo-100' : 'text-slate-600 bg-white/70'}`;
+      }
+    }
+
+    /* Master Render Coordinator */
+    function renderAll() {
+      renderGrids();
+      renderColumnLocks();
+      renderDirectionalArrows();
+      updateCenterHUD();
+    }
+
+    /* =================================================================
+       4. GAMEPLAY ACTIONS: PUSH DISPLACEMENT, SLENT RED X & REVEALS
+       ================================================================= */
+    function triggerSilentRedX(colIndex) {
+      // Find the top-most tile or arrow element for column
+      const targetTile = document.getElementById(`ptile-0-${colIndex}`) || document.getElementById('arrow-row')?.children[colIndex];
+      if (!targetTile) return;
+
+      // Ensure only one overlay exists at a time
+      const old = targetTile.querySelector('.silent-x-overlay');
+      if (old) old.remove();
+
+      const overlay = document.createElement('div');
+      overlay.className = 'absolute inset-0 flex items-center justify-center silent-x-overlay z-40';
+      overlay.innerHTML = `
+        <svg class="w-8 h-8 text-rose-600 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      `;
+
+      targetTile.appendChild(overlay);
+      recordLog(`[Silent Red X] Column ${colIndex + 1} rejected incompatible creature. (No sound played)`);
+
+      setTimeout(() => {
+        if (overlay && overlay.parentNode) {
+          overlay.remove();
+        }
+      }, 650);
+    }
+
+    function showTurnToast(message) {
+      const toast = document.getElementById('turn-toast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 1100);
+    }
+
+    function onPushColumn(colIndex) {
+      if (isPushingAnimation) return;
+
+      const isMyTurn = (gameMode !== 'online') || (currentTurn === myRole);
+      if (!isMyTurn) {
+        showTurnToast("Wait for your turn!");
+        return;
+      }
+
+      const activeLocks = (myRole === 'p2') ? oppColumnLocks : playerColumnLocks;
+
+      // Check Column Reservation: Column locked to a different animal?
+      if (activeLocks[colIndex] && activeLocks[colIndex] !== activePusher.animal) {
+        triggerSilentRedX(colIndex);
+        return;
+      }
+
+      executePush(colIndex, currentTurn);
+    }
+
+    function executePush(colIndex, turn) {
+      if (isPushingAnimation) return;
+      isPushingAnimation = true;
+
+      playMahjongSound('push');
+      const targetGrid = (turn === 'p1') ? playerGrid : oppGrid;
+      const targetLocks = (turn === 'p1') ? playerColumnLocks : oppColumnLocks;
+
+      // 1. Lock column species if unreserved
+      if (!targetLocks[colIndex]) {
+        targetLocks[colIndex] = activePusher.animal;
+        recordLog(`${turn === 'p1' ? 'P1' : 'P2'} locked Column ${colIndex + 1} to [${ANIMAL_DEFS[activePusher.animal].name}]`);
+      }
+
+      // 2. Physical displacement: Slide tiles downwards
+      const poppedTile = targetGrid[ROWS - 1][colIndex];
+
+      for (let r = ROWS - 1; r > 0; r--) {
+        targetGrid[r][colIndex] = targetGrid[r - 1][colIndex];
+      }
+
+      // 3. Insert active pusher into top slot (flipped open)
+      targetGrid[0][colIndex] = {
+        animal: activePusher.animal,
+        owner: turn,
+        isFlipped: true
+      };
+
+      // 4. Reveal the popped tile
+      if (poppedTile) {
+        poppedTile.isFlipped = true;
+      }
+
+      renderAll();
+
+      // Check for match-3 elimination
+      checkColumnMatches(targetGrid, colIndex, turn);
+
+      setTimeout(() => {
+        isPushingAnimation = false;
+
+        if (poppedTile) {
+          activePusher = {
+            animal: poppedTile.animal,
+            owner: poppedTile.owner
+          };
+
+          recordLog(`Popped tile from Column ${colIndex + 1}: [${ANIMAL_DEFS[poppedTile.animal].name}] belonging to ${poppedTile.owner.toUpperCase()}`);
+
+          // Ownership Check: Keep turn or pass to opponent?
+          if (poppedTile.owner === turn) {
+            recordLog(`${turn.toUpperCase()} popped own tile! Keeps the turn.`);
+            if (turn === 'p1') score += 100; else oppScore += 100;
+            renderAll();
+          } else {
+            // Popped opponent tile! Pass turn across
+            currentTurn = (turn === 'p1') ? 'p2' : 'p1';
+            playMahjongSound('turn_pass');
+            showTurnToast(`Opponent's tile! Turn passed to ${currentTurn.toUpperCase()}`);
+            recordLog(`Turn passed to ${currentTurn.toUpperCase()}`);
+            renderAll();
+
+            if (gameMode === 'ai' && currentTurn === 'p2') {
+              setTimeout(runAITurn, 900);
+            }
+          }
+        } else {
+          // Empty slot popped, spawn fresh pusher
+          activePusher = {
+            animal: pickRandomAnimal(),
+            owner: turn
+          };
+          renderAll();
+        }
+
+        if (gameMode === 'online') {
+          broadcastNetworkState({
+            type: 'MOVE_PUSH',
+            colIndex,
+            turn,
+            state: getFullStateObject()
+          });
+        }
+      }, 260);
+    }
+
+    function checkColumnMatches(grid, colIndex, turn) {
+      let streak = 0;
+      let matchedIndices = [];
+
+      for (let r = 0; r < ROWS; r++) {
+        const tile = grid[r][colIndex];
+        if (tile && tile.isFlipped && tile.animal === activePusher.animal) {
+          streak++;
+          matchedIndices.push(r);
+          if (streak >= 3) {
+            // Match-3 Achieved
+            playMahjongSound('match');
+            if (turn === 'p1') score += 300; else oppScore += 300;
+            recordLog(`🎉 MATCH-3 on Column ${colIndex + 1}! +300 points.`);
+            matchedIndices.forEach(rowIdx => {
+              grid[rowIdx][colIndex] = null;
+            });
+            break;
+          }
+        } else {
+          streak = 0;
+          matchedIndices = [];
+        }
+      }
+    }
+
+    function runAITurn() {
+      if (gameMode !== 'ai' || currentTurn !== 'p2') return;
+
+      // AI searches for matching column or first open valid column
+      let chosenCol = -1;
+      for (let c = 0; c < COLS; c++) {
+        if (oppColumnLocks[c] === activePusher.animal) {
+          chosenCol = c;
+          break;
+        }
+      }
+
+      if (chosenCol === -1) {
+        const validCols = [];
+        for (let c = 0; c < COLS; c++) {
+          if (!oppColumnLocks[c]) validCols.push(c);
+        }
+        chosenCol = validCols.length > 0 
+          ? validCols[Math.floor(Math.random() * validCols.length)] 
+          : Math.floor(Math.random() * COLS);
+      }
+
+      recordLog(`AI pushing active [${ANIMAL_DEFS[activePusher.animal].name}] into Column ${chosenCol + 1}...`);
+      executePush(chosenCol, 'p2');
+    }
+
+    /* =================================================================
+       5. NETWORKING & ROOM SYNCHRONIZATION HELPERS
+       ================================================================= */
+    function generateRoomCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let res = '';
+      for (let i = 0; i < 5; i++) {
+        res += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return res;
+    }
+
+    async function setupRoomChannel(code, isHost) {
+      currentRoomCode = code;
+      const channelName = `tuile_room_${code}`;
+
+      // 1. Setup Local Browser Tab BroadcastChannel
+      if (roomChannel) {
+        try { roomChannel.close(); } catch (e) {}
+      }
+
+      try {
+        roomChannel = new BroadcastChannel(channelName);
+        roomChannel.onmessage = (event) => {
+          handleNetworkMessage(event.data);
+        };
+      } catch (err) {
+        console.warn("BroadcastChannel error:", err);
+      }
+
+      // 2. Setup PeerJS Cross-Device WebRTC Connection
+      const peerId = isHost ? `mjhost_${code}` : `mjguest_${code}_${Math.floor(Math.random() * 9000)}`;
+
+      if (peer) {
+        try { peer.destroy(); } catch (e) {}
+      }
+
+      if (window.Peer) {
+        try {
+          peer = new Peer(peerId, {
+            debug: 1,
+            config: {
+              iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' }
+              ]
+            }
+          });
+
+          peer.on('open', (id) => {
+            recordLog(`P2P Peer ready: ${id}`);
+            if (!isHost) {
+              const hostId = `mjhost_${code}`;
+              recordLog(`Connecting to Host Peer: ${hostId}...`);
+              const conn = peer.connect(hostId, { reliable: true });
+              bindPeerConnection(conn);
+            }
+          });
+
+          peer.on('connection', (conn) => {
+            recordLog(`Incoming connection from guest!`);
+            bindPeerConnection(conn);
+          });
+
+          peer.on('error', (err) => {
+            recordLog(`P2P notice: ${err.type || err.message}`);
+          });
+
+          peer.on('disconnected', () => {
+            recordLog("Peer disconnected. Attempting reconnect...");
+            try { peer.reconnect(); } catch (e) {}
+          });
+        } catch (peerErr) {
+          recordLog(`PeerJS initialization notice: ${peerErr.message}`);
+        }
+      }
+
+      // 3. Listen to cloud room document if available
+      if (db && authUser) {
+        try {
+          if (firestoreUnsubscribe) firestoreUnsubscribe();
+          const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+          firestoreUnsubscribe = onSnapshot(roomDocRef, (snap) => {
+            if (snap.exists()) {
+              const data = snap.data();
+              if (data && data.senderId !== authUser.uid && data.lastAction) {
+                handleNetworkMessage(data.lastAction);
+              }
+            }
+          }, (err) => {
+            recordLog(`Cloud room sync notice: ${err.message}`);
+          });
+        } catch (err) {
+          console.warn("Cloud listener error:", err);
+        }
+      }
+    }
+
+    function bindPeerConnection(conn) {
+      activeConn = conn;
+
+      conn.on('open', () => {
+        recordLog(`🟢 Cross-device P2P link established!`);
+        document.getElementById('conn-indicator').className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block';
+
+        if (myRole === 'p2') {
+          updateLobbyUI(`Connected to PC Host! [${currentRoomCode}]`, 'p2');
+          showTurnToast("Connected to PC! Game synchronized.");
+          conn.send({ type: 'PEER_JOIN', code: currentRoomCode });
+        } else {
+          updateLobbyUI(`Phone Connected! [${currentRoomCode}]`, 'p1');
+          showTurnToast("Phone Connected! Transmitting board...");
+          conn.send({
+            type: 'INIT_STATE',
+            state: getFullStateObject()
+          });
+        }
+      });
+
+      conn.on('data', (data) => {
+        handleNetworkMessage(data);
+      });
+
+      conn.on('close', () => {
+        recordLog("🔴 Peer connection closed.");
+        document.getElementById('conn-indicator').className = 'w-2.5 h-2.5 rounded-full bg-rose-500 inline-block';
+        showTurnToast("Peer disconnected");
+      });
+    }
+
+    function handleNetworkMessage(data) {
+      if (!data || !data.type) return;
+
+      try {
+        if (data.type === 'PEER_JOIN' && myRole === 'p1') {
+          recordLog(`Phone connected to Room ${currentRoomCode}! Transmitting board state...`);
+          updateLobbyUI(`Phone Connected! [${currentRoomCode}]`, 'p1');
+          showTurnToast("Phone Connected!");
+          broadcastNetworkState({
+            type: 'INIT_STATE',
+            state: getFullStateObject()
+          });
+        } else if (data.type === 'INIT_STATE') {
+          gameMode = 'online';
+          initTuiTuiLeGame(data.state);
+          updateLobbyUI(`Connected to Host! [${currentRoomCode}]`, 'p2');
+          showTurnToast("Board synced with Host!");
+        } else if (data.type === 'MOVE_PUSH') {
+          recordLog(`Received move from opponent (Column ${data.colIndex + 1})`);
+          if (data.state) {
+            initTuiTuiLeGame(data.state);
+          } else {
+            executePush(data.colIndex, data.turn);
+          }
+          renderAll();
+        } else if (data.type === 'RESTART') {
+          initTuiTuiLeGame(data.state);
+        }
+      } catch (err) {
+        recordLog(`Network message error: ${err.message}`);
+      }
+    }
+
+    async function broadcastNetworkState(payload) {
+      if (!currentRoomCode) return;
+      const channelName = `tuile_room_${currentRoomCode}`;
+
+      // 1. Direct WebRTC P2P Send (PC <-> Phone instant transmission)
+      if (activeConn && activeConn.open) {
+        try {
+          activeConn.send(payload);
+        } catch (err) {
+          recordLog(`P2P send notice: ${err.message}`);
+        }
+      }
+
+      // 2. Local browser tab broadcast
+      if (roomChannel) {
+        try { roomChannel.postMessage(payload); } catch (e) {
+          // ignore
+        }
+      }
+
+      // 3. Cloud Firestore synchronization fallback
+      if (db && authUser) {
+        try {
+          const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', currentRoomCode);
+          await setDoc(roomDocRef, {
+            roomCode: currentRoomCode,
+            senderId: authUser.uid,
+            lastAction: payload,
+            updatedAt: Date.now()
+          });
+        } catch (err) {
+          recordLog(`Cloud broadcast warning: ${err.message}`);
+        }
+      }
+
+      // 4. LocalStorage multi-window fallback
+      try {
+        localStorage.setItem(channelName, JSON.stringify({
+          ...payload,
+          _uid: Math.random() + Date.now()
+        }));
+      } catch (e) {
+        // storage quota
+      }
+    }
+
+    function generateShareableLink(code) {
+      const cleanCode = encodeURIComponent((code || '').trim().toUpperCase());
+      let customInput = document.getElementById('input-custom-url');
+      let base = (customInput && customInput.value.trim().startsWith('http')) 
+        ? customInput.value.trim() 
+        : PUBLIC_SITE_URL;
+
+      try {
+        const urlObj = new URL(base);
+        urlObj.searchParams.set('room', cleanCode);
+        // Include hash fallback in case the host host-site redirects or trims queries
+        urlObj.hash = `room=${cleanCode}`;
+        return urlObj.toString();
+      } catch (e) {
+        recordLog(`URL formatting error: ${e.message}. Using default fallback.`);
+        return `${PUBLIC_SITE_URL}?room=${cleanCode}#room=${cleanCode}`;
+      }
+    }
+
+    function renderQRCode(code) {
+      const container = document.getElementById('qrcode-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const targetUrl = generateShareableLink(code);
+      const customUrlInput = document.getElementById('input-custom-url');
+      if (customUrlInput && !customUrlInput.value) {
+        customUrlInput.value = PUBLIC_SITE_URL;
+      }
+
+      try {
+        new QRCode(container, {
+          text: targetUrl,
+          width: 140,
+          height: 140,
+          colorDark: "#0f172a",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (qrErr) {
+        container.innerHTML = `<span class="text-xs text-rose-600 font-bold p-2">QR generation failed: ${qrErr.message}</span>`;
+        recordLog(`QR Code Render Error: ${qrErr.message}`);
+      }
+
+      const roomCodeText = document.getElementById('qr-room-code-text');
+      if (roomCodeText) roomCodeText.textContent = code;
+    }
+
+    function updateLobbyUI(statusText, role) {
+      document.getElementById('conn-status-text').textContent = statusText;
+      const roleTag = document.getElementById('role-tag');
+      if (gameMode === 'online') {
+        roleTag.textContent = (role === 'p1') ? "Host (P1)" : "Guest (P2)";
+        roleTag.className = 'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-900';
+      } else if (gameMode === 'pass_play') {
+        roleTag.textContent = "Pass & Play (Local)";
+        roleTag.className = 'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900';
+      } else {
+        roleTag.textContent = "Player 1 (Local)";
+        roleTag.className = 'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+      }
+      renderAll();
+    }
+
+    /* =================================================================
+       7. INSTANT BUG REPORT SNAPSHOT & PAYLOAD GENERATOR
+       ================================================================= */
+    function initBugReportTools() {
+      const snapBtn = document.getElementById('btn-screenshot');
+      const modal = document.getElementById('screenshot-modal');
+      const modalClose = document.getElementById('btn-close-modal');
+      const imgPreview = document.getElementById('modal-img-preview');
+      const downloadBtn = document.getElementById('btn-download-img');
+      const copyBtn = document.getElementById('btn-copy-payload');
+      const copyConfirm = document.getElementById('copy-confirm-text');
+      const captureElem = document.getElementById('capture-area');
+
+      snapBtn.addEventListener('click', async () => {
+        snapBtn.disabled = true;
+        snapBtn.classList.add('opacity-70');
+
+        try {
+          const canvas = await html2canvas(captureElem, {
+            scale: 2,
+            backgroundColor: "#b1cc81",
+            useCORS: true,
+            logging: false
+          });
+
+          const dataUrl = canvas.toDataURL('image/png');
+          imgPreview.src = dataUrl;
+          downloadBtn.href = dataUrl;
+          modal.classList.remove('hidden');
+          recordLog("📸 Snapshot captured for bug verification.");
+        } catch (err) {
+          recordLog(`Snapshot capture failed: ${err.message}`);
+        } finally {
+          snapBtn.disabled = false;
+          snapBtn.classList.remove('opacity-70');
+        }
+      });
+
+      modalClose.addEventListener('click', () => {
+        modal.classList.add('hidden');
+      });
+
+      // Export exact game state payload for debugging in chat
+      copyBtn.addEventListener('click', () => {
+        const diagnosticPayload = {
+          timestamp: new Date().toISOString(),
+          roomCode: currentRoomCode || 'LOCAL',
+          gameMode,
+          myRole,
+          currentTurn,
+          score,
+          oppScore,
+          activePusher,
+          playerColumnLocks,
+          oppColumnLocks,
+          playerMatrix: playerGrid.map(row => row.map(t => t ? `${t.animal}(${t.owner},${t.isFlipped ? 'open' : 'hidden'})` : null)),
+          oppMatrix: oppGrid.map(row => row.map(t => t ? `${t.animal}(${t.owner},${t.isFlipped ? 'open' : 'hidden'})` : null)),
+          recentLogs: logHistory.slice(0, 15)
+        };
+
+        const str = JSON.stringify(diagnosticPayload, null, 2);
+        const dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = str;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+
+        copyConfirm.classList.remove('hidden');
+        setTimeout(() => copyConfirm.classList.add('hidden'), 2200);
+      });
+    }
+
+    /* =================================================================
+       8. RUN & BIND
+       ================================================================= */
+    window.addEventListener('DOMContentLoaded', () => {
+      initTuiTuiLeGame();
+      initBugReportTools();
+      initIdentityAndFriends();
+      listenForChallenges();
+
+      // Friends Modal Toggles
+      document.getElementById('btn-toggle-friends').addEventListener('click', () => {
+        renderFriendsList();
+        document.getElementById('friends-modal').classList.remove('hidden');
+      });
+
+      document.getElementById('btn-close-friends').addEventListener('click', () => {
+        document.getElementById('friends-modal').classList.add('hidden');
+      });
+
+      // Toggle Custom Code Drawer
+      document.getElementById('btn-toggle-custom-code-box').addEventListener('click', () => {
+        const drawer = document.getElementById('custom-code-drawer');
+        drawer.classList.toggle('hidden');
+      });
+
+      // Manual sync button
+      document.getElementById('btn-refresh-friends-status').addEventListener('click', () => {
+        broadcastMeshHeartbeat();
+        renderFriendsList();
+        showTurnToast("Syncing friend status...");
+      });
+
+      // Rename username
+      document.getElementById('input-my-username').addEventListener('change', (e) => {
+        const val = e.target.value.trim();
+        if (val) {
+          myUsername = val;
+          localStorage.setItem('mj_username', val);
+          const initialEl = document.getElementById('avatar-initial');
+          if (initialEl) initialEl.textContent = val.charAt(0).toUpperCase();
+          recordLog(`Username updated to: ${val}`);
+          broadcastMeshHeartbeat();
+        }
+      });
+
+      // Copy My Friend Tag
+      document.getElementById('btn-copy-my-tag').addEventListener('click', () => {
+        const dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = myUserTag;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+        showTurnToast("Friend Tag Copied!");
+        recordLog(`Copied permanent friend tag: ${myUserTag}`);
+      });
+
+      // Save / Lock Custom Permanent Tag
+      document.getElementById('btn-save-custom-tag').addEventListener('click', () => {
+        const tagInput = document.getElementById('input-custom-tag');
+        if (!tagInput) return;
+        let raw = tagInput.value.trim().toUpperCase().replace(/[^A-Z0-9#-]/g, '');
+        if (!raw.startsWith('#')) raw = '#' + raw;
+
+        if (raw.length < 4 || raw.length > 12) {
+          showTurnToast("Code must be between 4 and 12 chars!");
+          return;
+        }
+
+        saveStoredPermanentTag(raw);
+        showTurnToast(`Permanent Code Locked: ${myUserTag}`);
+        recordLog(`Saved permanent custom code: ${myUserTag}`);
+        document.getElementById('custom-code-drawer').classList.add('hidden');
+        startPresenceBroadcast(); // Re-broadcast presence under the updated permanent tag
+      });
+
+      // Add Friend by Tag
+      document.getElementById('btn-add-friend').addEventListener('click', () => {
+        const input = document.getElementById('input-add-friend-tag');
+        const raw = (input ? input.value : '').trim().toUpperCase();
+        if (!raw || raw === myUserTag) {
+          showTurnToast("Invalid friend tag!");
+          return;
+        }
+
+        const tag = raw.startsWith('#') ? raw : `#${raw}`;
+        if (savedFriends.some(f => f.tag === tag)) {
+          showTurnToast("Friend already in list!");
+          return;
+        }
+
+        savedFriends.push({ tag: tag, name: `Friend ${tag.slice(-4)}` });
+        saveFriendsList();
+        if (input) input.value = '';
+        showTurnToast(`Added ${tag} to friends!`);
+        recordLog(`Added new friend: ${tag}`);
+        broadcastMeshHeartbeat();
+      });
+
+      // Copy My Friend Tag
+      document.getElementById('btn-copy-my-tag').addEventListener('click', () => {
+        const dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = myUserTag;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+        showTurnToast("Permanent Friend Tag Copied!");
+        recordLog(`Copied permanent friend tag: ${myUserTag}`);
+      });
+
+      // Save / Lock Custom Permanent Tag
+      document.getElementById('btn-save-custom-tag').addEventListener('click', () => {
+        const tagInput = document.getElementById('input-custom-tag');
+        if (!tagInput) return;
+        let raw = tagInput.value.trim().toUpperCase().replace(/[^A-Z0-9#-]/g, '');
+        if (!raw.startsWith('#')) raw = '#' + raw;
+
+        if (raw.length < 4 || raw.length > 12) {
+          showTurnToast("Code must be between 4 and 12 chars!");
+          return;
+        }
+
+        saveStoredPermanentTag(raw);
+        tagInput.value = myUserTag;
+        showTurnToast(`Permanent Code Locked: ${myUserTag}`);
+        recordLog(`Saved permanent custom code: ${myUserTag}`);
+        startPresenceBroadcast(); // Re-broadcast presence under the updated permanent tag
+      });
+
+      // Add Friend by Tag
+      document.getElementById('btn-add-friend').addEventListener('click', () => {
+        const input = document.getElementById('input-add-friend-tag');
+        const raw = (input ? input.value : '').trim().toUpperCase();
+        if (!raw || raw === myUserTag) {
+          showTurnToast("Invalid friend tag!");
+          return;
+        }
+
+        const tag = raw.startsWith('#') ? raw : `#${raw}`;
+        if (savedFriends.some(f => f.tag === tag)) {
+          showTurnToast("Friend already in list!");
+          return;
+        }
+
+        savedFriends.push({ tag: tag, name: `Friend ${tag.slice(-4)}` });
+        saveFriendsList();
+        if (input) input.value = '';
+        showTurnToast(`Added ${tag} to friends!`);
+        recordLog(`Added new friend: ${tag}`);
+      });
+
+      // Accept / Decline Challenge
+      document.getElementById('btn-accept-challenge').addEventListener('click', async () => {
+        document.getElementById('challenge-popup').classList.add('hidden');
+        if (!pendingChallengeRoom) return;
+
+        currentRoomCode = pendingChallengeRoom;
+        myRole = 'p2';
+        gameMode = 'online';
+
+        document.getElementById('room-code-badge').classList.remove('hidden');
+        document.getElementById('active-code-display').textContent = currentRoomCode;
+        updateLobbyUI(`Joined match with Friend! [${currentRoomCode}]`, 'p2');
+        showTurnToast("Accepted challenge! Connecting...");
+        recordLog(`Accepted challenge. Connecting to room ${currentRoomCode}...`);
+
+        await setupRoomChannel(currentRoomCode, false);
+      });
+
+      document.getElementById('btn-decline-challenge').addEventListener('click', () => {
+        document.getElementById('challenge-popup').classList.add('hidden');
+        pendingChallengeRoom = null;
+      });
+
+      // Create Room Handler
+      document.getElementById('btn-create-room').addEventListener('click', async () => {
+        const code = generateRoomCode();
+        currentRoomCode = code;
+        gameMode = 'online';
+        myRole = 'p1';
+        currentTurn = 'p1';
+
+        await setupRoomChannel(code, true);
+
+        document.getElementById('room-code-badge').classList.remove('hidden');
+        document.getElementById('active-code-display').textContent = code;
+        updateLobbyUI(`Room: ${code} (Waiting for Phone...)`, 'p1');
+        recordLog(`Room [${code}] created. Scan QR on phone or type code!`);
+        renderQRCode(code);
+      });
+
+      // Show Phone QR Modal
+      document.getElementById('btn-show-qr').addEventListener('click', () => {
+        if (!currentRoomCode) return;
+        renderQRCode(currentRoomCode);
+        document.getElementById('qr-modal').classList.remove('hidden');
+      });
+
+      // Close Phone QR Modal
+      document.getElementById('btn-close-qr').addEventListener('click', () => {
+        document.getElementById('qr-modal').classList.add('hidden');
+      });
+
+      // Refresh QR Code with custom URL
+      document.getElementById('btn-refresh-qr').addEventListener('click', () => {
+        if (currentRoomCode) {
+          renderQRCode(currentRoomCode);
+        }
+      });
+
+      // Copy Code button inside QR Modal
+      document.getElementById('btn-copy-join-url').addEventListener('click', () => {
+        if (!currentRoomCode) return;
+        const dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = currentRoomCode;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+
+        const feedback = document.getElementById('qr-copy-feedback');
+        feedback.textContent = 'Room code copied!';
+        feedback.classList.remove('hidden');
+        setTimeout(() => feedback.classList.add('hidden'), 2200);
+      });
+
+      // Copy Full Link from Modal with fallback
+      document.getElementById('btn-copy-full-link').addEventListener('click', () => {
+        if (!currentRoomCode) return;
+        const linkToCopy = generateShareableLink(currentRoomCode);
+
+        try {
+          const dummy = document.createElement("textarea");
+          dummy.style.position = "fixed";
+          dummy.style.opacity = "0";
+          document.body.appendChild(dummy);
+          dummy.value = linkToCopy;
+          dummy.select();
+          document.execCommand("copy");
+          document.body.removeChild(dummy);
+
+          const feedback = document.getElementById('qr-copy-feedback');
+          feedback.textContent = 'Direct join link copied!';
+          feedback.classList.remove('hidden');
+          setTimeout(() => feedback.classList.add('hidden'), 2200);
+        } catch (copyErr) {
+          recordLog(`Copy link error: ${copyErr.message}`);
+        }
+      });
+
+      // Join Room Handler with input validation
+      document.getElementById('btn-join-room').addEventListener('click', async () => {
+        const input = document.getElementById('input-room-code');
+        const rawCode = (input ? input.value : '').trim();
+        const cleanCode = rawCode.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+
+        if (!cleanCode || cleanCode.length < 4 || cleanCode.length > 7) {
+          showTurnToast("Please enter a valid 5-letter Room Code");
+          if (input) input.focus();
+          return;
+        }
+
+        try {
+          currentRoomCode = cleanCode;
+          myRole = 'p2';
+          gameMode = 'online';
+
+          document.getElementById('room-code-badge').classList.remove('hidden');
+          document.getElementById('active-code-display').textContent = cleanCode;
+          updateLobbyUI(`Connecting to [${cleanCode}]...`, 'p2');
+          recordLog(`Connecting to Room [${cleanCode}]...`);
+
+          await setupRoomChannel(cleanCode, false);
+        } catch (joinErr) {
+          recordLog(`Error joining room: ${joinErr.message}`);
+          showTurnToast("Connection attempt failed. Retrying...");
+        }
+      });
+
+      // AUTO-JOIN ON PHONE: Extract room code from searchParams or hash (#room=XXXXX) with robust parsing
+      function checkAutoJoin() {
+        let roomToJoin = null;
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          roomToJoin = urlParams.get('room');
+
+          if (!roomToJoin && window.location.hash) {
+            const cleanHash = window.location.hash.replace(/^#/, '');
+            const hashParams = new URLSearchParams(cleanHash.includes('?') ? cleanHash.split('?')[1] : cleanHash);
+            roomToJoin = hashParams.get('room');
+          }
+
+          if (!roomToJoin && document.referrer) {
+            try {
+              const refUrl = new URL(document.referrer);
+              roomToJoin = refUrl.searchParams.get('room');
+              if (!roomToJoin && refUrl.hash) {
+                const refHashParams = new URLSearchParams(refUrl.hash.replace(/^#/, ''));
+                roomToJoin = refHashParams.get('room');
+              }
+            } catch (refErr) {}
+          }
+        } catch (e) {
+          recordLog(`Auto-join inspection notice: ${e.message}`);
+        }
+
+        if (roomToJoin) {
+          const sanitized = roomToJoin.replace(/[^A-Za-z0-9]/g, '').trim().toUpperCase();
+          if (sanitized.length >= 4) {
+            const input = document.getElementById('input-room-code');
+            if (input) input.value = sanitized;
+            recordLog(`Auto-detected Room Code [${sanitized}] from URL. Connecting...`);
+            showTurnToast(`Joining Room ${sanitized}...`);
+            
+            // Allow DOM and Peer library a short delay before connecting
+            setTimeout(() => {
+              const joinBtn = document.getElementById('btn-join-room');
+              if (joinBtn) joinBtn.click();
+            }, 600);
+          }
+        }
+      }
+
+      checkAutoJoin();
+
+      // Copy Code Button
+      document.getElementById('btn-copy-code').addEventListener('click', () => {
+        if (!currentRoomCode) return;
+        const dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = currentRoomCode;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+        recordLog(`Room code ${currentRoomCode} copied.`);
+        showTurnToast("Room Code Copied!");
+      });
+
+      // Mode Toggle (AI vs Pass & Play)
+      document.getElementById('btn-mode-toggle').addEventListener('click', () => {
+        if (gameMode === 'ai') {
+          gameMode = 'pass_play';
+          document.getElementById('mode-label').textContent = 'Pass&Play';
+          updateLobbyUI("Pass & Play (2 Players 1 Device)", 'p1');
+        } else {
+          gameMode = 'ai';
+          document.getElementById('mode-label').textContent = 'AI';
+          updateLobbyUI("Solo vs AI", 'p1');
+        }
+      });
+
+      // Restart Button
+      document.getElementById('btn-restart').addEventListener('click', () => {
+        playMahjongSound('push');
+        initTuiTuiLeGame();
+      });
+
+      // SFX Toggle
+      document.getElementById('btn-sfx').addEventListener('click', (e) => {
+        sfxOn = !sfxOn;
+        e.target.textContent = sfxOn ? '🔊' : '🔇';
+        recordLog(`Audio SFX ${sfxOn ? 'Enabled' : 'Muted'}`);
+      });
+
+      // Log Drawer Toggle
+      document.getElementById('btn-toggle-log').addEventListener('click', () => {
+        document.getElementById('log-drawer').classList.toggle('hidden');
+      });
+
+      document.getElementById('btn-clear-logs').addEventListener('click', () => {
+        logHistory = [];
+        document.getElementById('log-content').textContent = "Diagnostic logs cleared.";
+      });
+    });
+  </script>
+</body>
+</html>
