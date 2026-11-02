@@ -144,10 +144,10 @@
         <span id="conn-status-text" class="text-[11px] font-black text-slate-700">Online & Ready</span>
       </div>
       <div class="flex items-center gap-1">
-        <button id="btn-toggle-friends" class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition active:scale-95 flex items-center gap-1.5">
+        <button id="btn-toggle-friends" class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition active:scale-95 flex items-center gap-1.5">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping"></span>
           <span>👥 Friends</span>
-          <span id="online-friends-count" class="bg-indigo-800 text-indigo-100 px-1.5 py-0.2 rounded-full text-[9px]">0</span>
+          <span id="online-friends-count" class="bg-indigo-800 text-indigo-100 px-1.5 py-px rounded-full text-[9px]">0</span>
         </button>
         <div id="role-tag" class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
           Player 1 (Local)
@@ -157,13 +157,13 @@
 
     <!-- Room Action Buttons & Inputs -->
     <div class="flex items-center gap-1 flex-wrap">
-      <button id="btn-create-room" class="flex-1 min-w-[70px] bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] py-1 px-2 rounded-lg shadow-xs transition active:scale-95">
+      <button id="btn-create-room" class="flex-1 min-w-[70px] bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] py-1 px-2 rounded-lg shadow-sm transition active:scale-95">
         Create Room
       </button>
 
       <div class="flex items-center gap-1 flex-1 min-w-[110px]">
         <input id="input-room-code" type="text" placeholder="CODE" maxlength="6" class="w-full text-center uppercase tracking-widest font-black text-[10px] bg-slate-100 border border-slate-300 rounded-lg py-1 px-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-800" />
-        <button id="btn-join-room" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[10px] py-1 px-2.5 rounded-lg shadow-xs transition active:scale-95">
+        <button id="btn-join-room" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[10px] py-1 px-2.5 rounded-lg shadow-sm transition active:scale-95">
           Join
         </button>
       </div>
@@ -204,7 +204,7 @@
       <div class="bg-gradient-to-r from-indigo-50 to-emerald-50 border border-indigo-100 rounded-2xl p-2.5 flex flex-col gap-1.5 shadow-inner">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+            <div class="w-8 h-8 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shadow-sm">
               <span id="avatar-initial">P</span>
             </div>
             <div>
@@ -213,7 +213,7 @@
               </div>
               <div class="flex items-center gap-1 mt-0.5">
                 <span class="text-[9px] font-bold text-slate-500">Tag:</span>
-                <span id="display-my-tag" class="font-mono text-[10px] font-black text-indigo-900 bg-indigo-100/70 px-1.5 py-0.2 rounded select-all"></span>
+                <span id="display-my-tag" class="font-mono text-[10px] font-black text-indigo-900 bg-indigo-100/70 px-1.5 py-px rounded select-all"></span>
               </div>
             </div>
           </div>
@@ -233,7 +233,7 @@
         <!-- Collapsible Custom Code Editor -->
         <div id="custom-code-drawer" class="hidden flex items-center gap-1 pt-1">
           <input id="input-custom-tag" type="text" maxlength="12" placeholder="#CODE" class="font-mono text-xs font-black uppercase text-indigo-950 bg-white border border-indigo-300 rounded-lg px-2 py-1 flex-1 focus:outline-none" />
-          <button id="btn-save-custom-tag" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg active:scale-95 shadow-xs">
+          <button id="btn-save-custom-tag" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg active:scale-95 shadow-sm">
             Save
           </button>
         </div>
@@ -264,7 +264,7 @@
   </div>
 
   <!-- INCOMING GAME CHALLENGE POPUP -->
-  <div id="challenge-popup" class="hidden fixed top-4 z-50 bg-slate-900 text-white border-2 border-indigo-400 p-3 rounded-2xl shadow-2xl flex items-center gap-3 anim-banner">
+  <div id="challenge-popup" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white border-2 border-indigo-400 p-3 rounded-2xl shadow-2xl flex items-center gap-3">
     <div class="text-2xl animate-bounce">🎮</div>
     <div>
       <div class="text-xs font-black" id="challenge-caller-name">Friend challenged you!</div>
@@ -334,12 +334,12 @@
     </button>
     
     <div class="flex items-center gap-2">
-      <div class="text-[11px] font-bold text-emerald-950 bg-white/80 backdrop-blur-sm px-3 py-0.5 rounded-full shadow-xs flex items-center gap-1.5 border border-white/60">
-        <span class="text-slate-500">P1 Score:</span>
+      <div class="text-[11px] font-bold text-emerald-950 bg-white/80 backdrop-blur-sm px-3 py-0.5 rounded-full shadow-sm flex items-center gap-1.5 border border-white/60">
+        <span id="score-label" class="text-slate-500">P1 Score:</span>
         <span id="score-display" class="font-black text-emerald-900 text-sm">0</span>
       </div>
-      <div id="opp-score-pill" class="text-[11px] font-bold text-slate-700 bg-white/80 px-3 py-0.5 rounded-full shadow-xs flex items-center gap-1.5 border border-white/60">
-        <span class="text-slate-500">P2 Score:</span>
+      <div id="opp-score-pill" class="text-[11px] font-bold text-slate-700 bg-white/80 px-3 py-0.5 rounded-full shadow-sm flex items-center gap-1.5 border border-white/60">
+        <span id="opp-score-label" class="text-slate-500">P2 Score:</span>
         <span id="opp-score-display" class="font-black text-slate-900 text-sm">0</span>
       </div>
     </div>
@@ -350,7 +350,7 @@
   </header>
 
   <!-- CENTER PUSH LANE & ACTIVE PUSHER TILE (Placed horizontally above the side-by-side grids) -->
-  <section class="w-full max-w-6xl py-1 px-3 flex items-center justify-between bg-white/50 backdrop-blur-md rounded-xl border border-white/60 shadow-xs shrink-0 my-0.5">
+  <section class="w-full max-w-6xl py-1 px-3 flex items-center justify-between bg-white/50 backdrop-blur-md rounded-xl border border-white/60 shadow-sm shrink-0 my-0.5">
     <div class="flex items-center gap-2">
       <span class="text-[9px] font-black uppercase text-emerald-950 bg-emerald-100 px-2 py-0.5 rounded-md">Push Lane</span>
       <span class="text-[10px] text-slate-600 font-bold hidden sm:inline">Push tiles into columns to displace and match!</span>
@@ -364,7 +364,7 @@
     </div>
 
     <!-- Turn indicator -->
-    <div id="turn-banner-card" class="bg-emerald-600 border border-white text-white rounded-lg px-2.5 py-1 shadow-xs flex items-center gap-1.5">
+    <div id="turn-banner-card" class="bg-emerald-600 border border-white text-white rounded-lg px-2.5 py-1 shadow-sm flex items-center gap-1.5">
       <span class="inline-block w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
       <span id="turn-title" class="text-[10px] font-black uppercase tracking-wider">Your Turn</span>
     </div>
@@ -378,9 +378,9 @@
       <div class="w-full flex justify-between items-center px-1 mb-1 shrink-0 h-6">
         <span class="text-[10px] sm:text-xs font-black text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
           <span id="opp-label-title">Player 2 Grid</span>
-          <span id="opp-lock-status" class="text-[8.5px] bg-emerald-800/10 text-emerald-900 px-1.5 py-0.2 rounded font-mono">6x7</span>
+          <span id="opp-lock-status" class="text-[8.5px] bg-emerald-800/10 text-emerald-900 px-1.5 py-px rounded font-mono">6x7</span>
         </span>
-        <span id="opp-turn-pill" class="text-[9px] font-bold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full shadow-xs">Waiting</span>
+        <span id="opp-turn-pill" class="text-[9px] font-bold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full shadow-sm">Waiting</span>
       </div>
 
       <!-- Opponent Column Lock Headers -->
@@ -402,9 +402,9 @@
       <div class="w-full flex justify-between items-center px-1 mb-1 shrink-0 h-6">
         <span class="text-[10px] sm:text-xs font-black text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
           <span id="player-label-title">Player 1 Grid (You)</span>
-          <span class="text-[8.5px] bg-emerald-800/10 text-emerald-900 px-1.5 py-0.2 rounded font-mono">6x7</span>
+          <span class="text-[8.5px] bg-emerald-800/10 text-emerald-900 px-1.5 py-px rounded font-mono">6x7</span>
         </span>
-        <span id="player-turn-pill" class="text-[9px] font-black text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full shadow-xs">Active</span>
+        <span id="player-turn-pill" class="text-[9px] font-black text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full shadow-sm">Active</span>
       </div>
 
       <!-- Player Column Lock Headers -->
@@ -425,6 +425,14 @@
     </div>
   </main>
 
+  <div id="game-over-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3">
+    <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl flex flex-col items-center gap-3 text-center">
+      <h3 id="game-over-title" class="font-black text-slate-800 text-lg">Game Over</h3>
+      <p id="game-over-scores" class="text-sm font-bold text-slate-600"></p>
+      <button id="btn-play-again" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm px-5 py-2 rounded-xl shadow-sm active:scale-95 transition">Play Again</button>
+    </div>
+  </div>
+
   <!-- CONTROLS & BUG SNAPSHOT FOOTER (Compact Height) -->
   <footer class="w-full max-w-sm sm:max-w-md py-1 flex items-center justify-between gap-1.5 px-1 shrink-0">
     <button id="btn-screenshot" class="flex-1 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-black text-[11px] py-1.5 px-2.5 rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition border border-teal-300/40">
@@ -434,7 +442,7 @@
       </svg>
       <span>📸 Snapshot Bug Report</span>
     </button>
-    <button id="btn-toggle-log" class="bg-white/80 hover:bg-white text-slate-800 font-bold text-[11px] py-1.5 px-2.5 rounded-xl shadow-xs border border-slate-300 active:scale-95 transition">
+    <button id="btn-toggle-log" class="bg-white/80 hover:bg-white text-slate-800 font-bold text-[11px] py-1.5 px-2.5 rounded-xl shadow-sm border border-slate-300 active:scale-95 transition">
       ⚙️ State Log
     </button>
   </footer>
@@ -660,8 +668,8 @@
 
     function playMahjongSound(event) {
       if (!sfxOn || !window.Tone) return;
+      if (Tone.context.state !== 'running') return;
       try {
-        if (Tone.context.state !== 'running') Tone.start();
         initAudioEngine();
         if (event === 'push') {
           // Tactile wooden/ceramic tile clack
@@ -696,11 +704,73 @@
     let score = 0;
     let oppScore = 0;
     let logHistory = [];
+    let gameEpoch = 0;
+    let aiTimer = null;
+    let toastTimer = null;
+    let gameOver = false;
+    const WIN_SCORE = 3000;
+
+    function viewRole() {
+      if (gameMode === 'online') return myRole;
+      if (gameMode === 'pass_play') return currentTurn;
+      return 'p1';
+    }
+
+    function isLocalTurn() {
+      if (gameMode === 'online') return currentTurn === myRole;
+      if (gameMode === 'ai') return currentTurn === 'p1';
+      return true;
+    }
+
+    function locksFor(turn) {
+      return turn === 'p1' ? playerColumnLocks : oppColumnLocks;
+    }
+
+    function gridFor(turn) {
+      return turn === 'p1' ? playerGrid : oppGrid;
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[ch]);
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(String(text));
+      }
+
+      return new Promise((resolve, reject) => {
+        const textarea = document.createElement('textarea');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        textarea.value = String(text);
+        document.body.appendChild(textarea);
+        textarea.select();
+        let copied = false;
+        try {
+          copied = document.execCommand('copy');
+        } catch (err) {
+          document.body.removeChild(textarea);
+          reject(err);
+          return;
+        }
+        document.body.removeChild(textarea);
+        if (copied) resolve();
+        else reject(new Error('Copy failed'));
+      });
+    }
 
     // PeerJS Cross-Device P2P WebRTC Connection
     let peer = null;
     let activeConn = null;
     let currentRoomCode = null;
+    let peerUnavailableRetries = 0;
 
     // Cloud Room Synchronization (Firebase Firestore if available)
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'mahjong-tui-tui-le';
@@ -744,9 +814,14 @@
     let livePresenceMap = {}; // { [tag]: { online: boolean, lastSeen: number, name: string, activeRoom: string } }
     let presenceHeartbeatInterval = null;
     let pendingChallengeRoom = null;
+    let challengeTimer = null;
     let sharedPresenceChannel = null;
     let sharedInviteChannel = null;
     let mqttClient = null;
+    let presenceSetupDone = false;
+    const friendPresenceUnsubscribes = new Map();
+    let firestoreInviteUnsubscribe = null;
+    const mqttSubscribedTopics = new Set();
     const MQTT_BROKER = "broker.hivemq.com";
     const MQTT_PORT = 8884; // Secure WSS port
     const MQTT_TOPIC_PREFIX = "push_mahjong_game_v2";
@@ -848,6 +923,7 @@
         mqttClient = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, clientId);
 
         mqttClient.onConnectionLost = (responseObject) => {
+          mqttSubscribedTopics.clear();
           if (responseObject.errorCode !== 0) {
             recordLog(`Cloud mesh re-establishing: ${responseObject.errorMessage}`);
             setTimeout(initCloudSignalingMesh, 4000);
@@ -873,10 +949,8 @@
           keepAliveInterval: 30,
           onSuccess: () => {
             recordLog(`Cloud Friend Mesh connected via WSS.`);
-            // Subscribe to broad presence and targeted invite channel
-            const cleanTag = myUserTag.replace(/[^A-Za-z0-9_-]/g, '_');
-            mqttClient.subscribe(`${MQTT_TOPIC_PREFIX}/presence/#`, { qos: 0 });
-            mqttClient.subscribe(`${MQTT_TOPIC_PREFIX}/invites/${cleanTag}`, { qos: 1 });
+            mqttSubscribedTopics.clear();
+            syncMqttSubscriptions();
             broadcastMeshHeartbeat();
           },
           onFailure: (err) => {
@@ -885,6 +959,36 @@
         });
       } catch (err) {
         console.warn("MQTT Mesh init notice:", err);
+      }
+    }
+
+    function syncMqttSubscriptions() {
+      if (!mqttClient || !mqttClient.isConnected()) return;
+
+      const wanted = new Set(
+        savedFriends
+          .filter(friend => friend && /^#[A-Z0-9-]{3,11}$/.test(friend.tag))
+          .map(friend => `${MQTT_TOPIC_PREFIX}/presence/${friend.tag.replace(/[^A-Za-z0-9_-]/g, '_')}`)
+      );
+      const cleanMyTag = myUserTag.replace(/[^A-Za-z0-9_-]/g, '_');
+      if (cleanMyTag) wanted.add(`${MQTT_TOPIC_PREFIX}/invites/${cleanMyTag}`);
+
+      for (const topic of mqttSubscribedTopics) {
+        if (!wanted.has(topic)) {
+          try {
+            mqttClient.unsubscribe(topic);
+            mqttSubscribedTopics.delete(topic);
+          } catch (e) {}
+        }
+      }
+
+      for (const topic of wanted) {
+        if (!mqttSubscribedTopics.has(topic)) {
+          try {
+            mqttClient.subscribe(topic, { qos: topic.includes('/invites/') ? 1 : 0 });
+            mqttSubscribedTopics.add(topic);
+          } catch (e) {}
+        }
       }
     }
 
@@ -912,6 +1016,11 @@
       try {
         localStorage.setItem('mj_friends_list', JSON.stringify(savedFriends));
       } catch (e) {}
+      Object.keys(livePresenceMap).forEach(tag => {
+        if (!savedFriends.some(friend => friend.tag === tag)) delete livePresenceMap[tag];
+      });
+      syncMqttSubscriptions();
+      startPresenceBroadcast();
       renderFriendsList();
     }
 
@@ -958,29 +1067,30 @@
         }
 
         const row = document.createElement('div');
-        row.className = 'flex items-center justify-between p-2.5 rounded-2xl bg-white border border-slate-200/80 text-xs shadow-xs hover:border-indigo-200 transition';
+        row.className = 'flex items-center justify-between p-2.5 rounded-2xl bg-white border border-slate-200/80 text-xs shadow-sm hover:border-indigo-200 transition';
+        const friendName = presence?.name || friend.name || 'Friend';
         row.innerHTML = `
           <div class="flex items-center gap-2.5">
             <div class="relative">
               <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-black text-xs flex items-center justify-center">
-                ${(friend.name || 'F').charAt(0).toUpperCase()}
+                ${escapeHtml(String(friend.name || 'F').charAt(0).toUpperCase())}
               </div>
               <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${statusColor}"></span>
             </div>
             <div>
               <div class="font-black text-slate-800 flex items-center gap-1.5 leading-none">
-                <span>${presence?.name || friend.name || 'Friend'}</span>
-                <span class="text-[9.5px] font-mono text-slate-400 bg-slate-100 px-1 py-0.2 rounded">${friend.tag}</span>
+                <span>${escapeHtml(friendName)}</span>
+                <span class="text-[9.5px] font-mono text-slate-400 bg-slate-100 px-1 py-px rounded">${escapeHtml(friend.tag)}</span>
               </div>
               <div class="text-[9px] ${statusTextColor} mt-1 flex items-center gap-1">
                 <span>${statusText}</span>
-                ${isInGame ? `<span class="text-[8px] bg-amber-100 text-amber-800 px-1 rounded font-mono">${presence.activeRoom}</span>` : ''}
+                ${isInGame ? `<span class="text-[8px] bg-amber-100 text-amber-800 px-1 rounded font-mono">${escapeHtml(presence.activeRoom)}</span>` : ''}
               </div>
             </div>
           </div>
           <div class="flex items-center gap-1.5">
             ${isOnline ? `
-              <button class="btn-challenge-friend bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] px-3 py-1.5 rounded-xl active:scale-95 shadow-xs transition flex items-center gap-1" data-tag="${friend.tag}" data-name="${presence?.name || friend.name}">
+              <button class="btn-challenge-friend bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] px-3 py-1.5 rounded-xl active:scale-95 shadow-sm transition flex items-center gap-1" data-tag="${escapeHtml(friend.tag)}" data-name="${escapeHtml(friendName)}">
                 <span>🎮</span> Challenge
               </button>
             ` : ''}
@@ -1013,17 +1123,28 @@
     }
 
     function startPresenceBroadcast() {
-      // 1. Single long-lived cross-tab local channel
-      if (!sharedPresenceChannel) {
-        try {
-          sharedPresenceChannel = new BroadcastChannel('mj_presence_channel');
-          sharedPresenceChannel.onmessage = (e) => {
-            if (!e.data || !e.data.tag) return;
-            handlePresenceUpdate(e.data);
-          };
-        } catch (e) {
-          console.warn("BroadcastChannel not supported in this environment");
+      if (!presenceSetupDone) {
+        if (!sharedPresenceChannel) {
+          try {
+            sharedPresenceChannel = new BroadcastChannel('mj_presence_channel');
+            sharedPresenceChannel.onmessage = (e) => {
+              if (!e.data || !e.data.tag) return;
+              handlePresenceUpdate(e.data);
+            };
+          } catch (e) {
+            console.warn("BroadcastChannel not supported in this environment");
+          }
         }
+
+        window.addEventListener('storage', (e) => {
+          if (e.key && e.key.startsWith('mj_presence_') && e.newValue) {
+            try {
+              handlePresenceUpdate(JSON.parse(e.newValue));
+            } catch (err) {}
+          }
+        });
+        setInterval(renderFriendsList, 4000);
+        presenceSetupDone = true;
       }
 
       // 2. Broadcast own heartbeat every 3.5 seconds
@@ -1060,41 +1181,49 @@
       presenceHeartbeatInterval = setInterval(sendHeartbeat, 3500);
 
       // 3. Listen to cloud presence for friends
+      friendPresenceUnsubscribes.forEach(unsubscribe => {
+        try { unsubscribe(); } catch (e) {}
+      });
+      friendPresenceUnsubscribes.clear();
       if (db && authUser) {
         savedFriends.forEach(friend => {
           try {
+            if (!friend || !/^#[A-Z0-9-]{3,11}$/.test(friend.tag)) return;
             const safeFriendKey = friend.tag.replace(/[^a-zA-Z0-9_-]/g, '_');
             const friendRef = doc(db, 'artifacts', appId, 'public', 'data', 'presence', safeFriendKey);
-            onSnapshot(friendRef, (snap) => {
+            const unsubscribe = onSnapshot(friendRef, (snap) => {
               if (snap.exists()) {
                 handlePresenceUpdate(snap.data());
               }
             }, (err) => {
               console.warn("Friend presence watch error:", err);
             });
+            friendPresenceUnsubscribes.set(friend.tag, unsubscribe);
           } catch (e) {}
         });
       }
+    }
 
-      // Check localStorage pulses
-      window.addEventListener('storage', (e) => {
-        if (e.key && e.key.startsWith('mj_presence_') && e.newValue) {
-          try {
-            handlePresenceUpdate(JSON.parse(e.newValue));
-          } catch (err) {}
-        }
-      });
-
-      // Periodically refresh friends list online status UI
-      setInterval(renderFriendsList, 4000);
+    function sanitizePresence(data) {
+      if (!data || typeof data.tag !== 'string' || !/^#[A-Z0-9-]{3,11}$/.test(data.tag)) return null;
+      if (typeof data.name !== 'string' || typeof data.lastSeen !== 'number' || !Number.isFinite(data.lastSeen)) return null;
+      return {
+        tag: data.tag,
+        name: data.name.slice(0, 14),
+        lastSeen: Math.min(data.lastSeen, Date.now()),
+        activeRoom: typeof data.activeRoom === 'string' && /^[A-Z0-9]{4,7}$/.test(data.activeRoom)
+          ? data.activeRoom
+          : null
+      };
     }
 
     function handlePresenceUpdate(data) {
-      if (!data || !data.tag || data.tag === myUserTag) return;
-      livePresenceMap[data.tag] = {
-        name: data.name,
-        lastSeen: data.lastSeen,
-        activeRoom: data.activeRoom
+      const presence = sanitizePresence(data);
+      if (!presence || presence.tag === myUserTag || !savedFriends.some(friend => friend.tag === presence.tag)) return;
+      livePresenceMap[presence.tag] = {
+        name: presence.name,
+        lastSeen: presence.lastSeen,
+        activeRoom: presence.activeRoom
       };
       renderFriendsList();
     }
@@ -1169,11 +1298,15 @@
       }
 
       // Cloud invitation listener
+      if (firestoreInviteUnsubscribe) {
+        try { firestoreInviteUnsubscribe(); } catch (e) {}
+        firestoreInviteUnsubscribe = null;
+      }
       if (db && authUser) {
         try {
           const safeMyKey = myUserTag.replace(/[^a-zA-Z0-9_-]/g, '_');
           const inviteRef = doc(db, 'artifacts', appId, 'public', 'data', 'invites', safeMyKey);
-          onSnapshot(inviteRef, (snap) => {
+          firestoreInviteUnsubscribe = onSnapshot(inviteRef, (snap) => {
             if (snap.exists()) {
               const data = snap.data();
               if (data && data.timestamp && Date.now() - data.timestamp < 30000) {
@@ -1188,11 +1321,19 @@
     }
 
     function promptIncomingChallenge(data) {
+      if (!data || typeof data.fromTag !== 'string' || !/^#[A-Z0-9-]{3,11}$/.test(data.fromTag) ||
+          typeof data.roomCode !== 'string' || !/^[A-Z0-9]{4,7}$/.test(data.roomCode)) return;
+      if (challengeTimer) clearTimeout(challengeTimer);
       pendingChallengeRoom = data.roomCode;
       const popup = document.getElementById('challenge-popup');
       const callerText = document.getElementById('challenge-caller-name');
       if (callerText) callerText.textContent = `${data.fromName || 'Friend'} (${data.fromTag}) challenged you!`;
       if (popup) popup.classList.remove('hidden');
+      challengeTimer = setTimeout(() => {
+        if (popup) popup.classList.add('hidden');
+        pendingChallengeRoom = null;
+        challengeTimer = null;
+      }, 20000);
       playMahjongSound('match');
     }
 
@@ -1209,8 +1350,86 @@
       return ANIMAL_LIST[Math.floor(Math.random() * ANIMAL_LIST.length)];
     }
 
+    function isValidState(s) {
+      const isValidAnimal = animal => Object.prototype.hasOwnProperty.call(ANIMAL_DEFS, animal);
+      const validGrid = grid => Array.isArray(grid) && grid.length === ROWS &&
+        grid.every(row => Array.isArray(row) && row.length === COLS &&
+          row.every(tile => tile === null || (
+            tile && isValidAnimal(tile.animal) && (tile.owner === 'p1' || tile.owner === 'p2') &&
+            typeof tile.isFlipped === 'boolean'
+          )));
+      const validLocks = locks => Array.isArray(locks) && locks.length === COLS &&
+        locks.every(animal => animal === null || isValidAnimal(animal));
+
+      return Boolean(s && validGrid(s.playerGrid) && validGrid(s.oppGrid) &&
+        validLocks(s.playerColumnLocks) && validLocks(s.oppColumnLocks) &&
+        s.activePusher && isValidAnimal(s.activePusher.animal) &&
+        (s.currentTurn === 'p1' || s.currentTurn === 'p2') &&
+        Number.isFinite(s.score) && Number.isFinite(s.oppScore) &&
+        (s.gameOver === undefined || typeof s.gameOver === 'boolean'));
+    }
+
+    function hasLegalMove(turn) {
+      return locksFor(turn).some(lock => !lock || lock === activePusher.animal);
+    }
+
+    function scheduleAITurnIfNeeded() {
+      clearTimeout(aiTimer);
+      aiTimer = null;
+      if (gameMode === 'ai' && currentTurn === 'p2' && !gameOver) {
+        aiTimer = setTimeout(runAITurn, 900);
+      }
+    }
+
+    function showGameOverModal() {
+      const winner = score >= WIN_SCORE ? 'p1' : 'p2';
+      let title;
+      if (gameMode === 'pass_play') {
+        title = `Player ${winner === 'p1' ? '1' : '2'} wins!`;
+      } else if (gameMode === 'ai') {
+        title = winner === 'p1' ? 'You win!' : 'AI wins!';
+      } else {
+        title = winner === myRole ? 'You win!' : 'Opponent wins!';
+      }
+      document.getElementById('game-over-title').textContent = title;
+      document.getElementById('game-over-scores').textContent = `Player 1: ${score}  •  Player 2: ${oppScore}`;
+      document.getElementById('game-over-modal').classList.remove('hidden');
+    }
+
+    function checkGameOver() {
+      if (score < WIN_SCORE && oppScore < WIN_SCORE) return false;
+      gameOver = true;
+      clearTimeout(aiTimer);
+      aiTimer = null;
+      showGameOverModal();
+      return true;
+    }
+
+    function resolveNoLegalMoves() {
+      let redraws = 0;
+      while (!hasLegalMove(currentTurn) && redraws < 3) {
+        recordLog(`${currentTurn.toUpperCase()} has no legal column. Drawing a new pusher and passing the turn.`);
+        showTurnToast("No legal column, tile discarded, turn passes");
+        currentTurn = currentTurn === 'p1' ? 'p2' : 'p1';
+        activePusher = { animal: pickRandomAnimal(), owner: currentTurn };
+        redraws++;
+      }
+      if (!hasLegalMove(currentTurn)) {
+        recordLog(`No legal column after ${redraws} redraws.`);
+      }
+      renderAll();
+      scheduleAITurnIfNeeded();
+    }
+
     /* Initialize boards: 100% blind facedown tiles */
     function initTuiTuiLeGame(syncState = null) {
+      gameEpoch++;
+      isPushingAnimation = false;
+      clearTimeout(aiTimer);
+      aiTimer = null;
+      gameOver = Boolean(syncState && typeof syncState.gameOver === 'boolean' ? syncState.gameOver : false);
+      document.getElementById('game-over-modal').classList.add('hidden');
+
       if (syncState) {
         // Hydrate from host's networked state
         playerGrid = syncState.playerGrid;
@@ -1223,6 +1442,7 @@
         oppScore = syncState.oppScore;
         recordLog("Synced full board state.");
         renderAll();
+        if (gameOver) showGameOverModal();
         return;
       }
 
@@ -1268,6 +1488,8 @@
 
       recordLog(`Game ready. Active pusher: ${ANIMAL_DEFS[activePusher.animal].name}`);
       renderAll();
+      if (checkGameOver()) return;
+      resolveNoLegalMoves();
 
       if (gameMode === 'online') {
         broadcastNetworkState({
@@ -1286,7 +1508,8 @@
         activePusher,
         currentTurn,
         score,
-        oppScore
+        oppScore,
+        gameOver
       };
     }
 
@@ -1294,8 +1517,10 @@
     function renderGrids() {
       // Perspective rendering:
       // In online mode, Guest (p2) sees their board on the bottom and p1 on top.
-      const bottomGridData = (myRole === 'p2') ? oppGrid : playerGrid;
-      const topGridData = (myRole === 'p2') ? playerGrid : oppGrid;
+      const bottomRole = viewRole();
+      const topRole = bottomRole === 'p1' ? 'p2' : 'p1';
+      const bottomGridData = gridFor(bottomRole);
+      const topGridData = gridFor(topRole);
 
       // Opponent / Top Grid
       const oppContainer = document.getElementById('opp-grid');
@@ -1352,11 +1577,11 @@
       const playerLockRow = document.getElementById('col-reservations');
       if (playerLockRow) {
         playerLockRow.innerHTML = '';
-        const locks = (myRole === 'p2') ? oppColumnLocks : playerColumnLocks;
+        const locks = locksFor(viewRole());
         for (let c = 0; c < COLS; c++) {
           const lockedAnimal = locks[c];
           const badge = document.createElement('div');
-          badge.className = 'h-5 sm:h-6 rounded flex items-center justify-center border text-[8px] font-black shadow-xs';
+          badge.className = 'h-5 sm:h-6 rounded flex items-center justify-center border text-[8px] font-black shadow-sm';
           if (lockedAnimal) {
             badge.className += ' bg-amber-100 border-amber-300 text-amber-900 p-0.5';
             badge.innerHTML = `<div class="w-4 h-4">${ANIMAL_DEFS[lockedAnimal].render()}</div>`;
@@ -1373,11 +1598,11 @@
       const oppLockRow = document.getElementById('opp-col-reservations');
       if (oppLockRow) {
         oppLockRow.innerHTML = '';
-        const locks = (myRole === 'p2') ? playerColumnLocks : oppColumnLocks;
+        const locks = locksFor(viewRole() === 'p1' ? 'p2' : 'p1');
         for (let c = 0; c < COLS; c++) {
           const lockedAnimal = locks[c];
           const badge = document.createElement('div');
-          badge.className = 'h-5 sm:h-6 rounded flex items-center justify-center border text-[8px] font-black shadow-xs';
+          badge.className = 'h-5 sm:h-6 rounded flex items-center justify-center border text-[8px] font-black shadow-sm';
           if (lockedAnimal) {
             badge.className += ' bg-amber-100 border-amber-300 text-amber-900 p-0.5';
             badge.innerHTML = `<div class="w-4 h-4">${ANIMAL_DEFS[lockedAnimal].render()}</div>`;
@@ -1396,17 +1621,17 @@
       if (!arrowRow) return;
       arrowRow.innerHTML = '';
 
-      const isMyTurn = (gameMode !== 'online') || (currentTurn === myRole);
-      const activeLocks = (myRole === 'p2') ? oppColumnLocks : playerColumnLocks;
+      const isMyTurn = isLocalTurn();
+      const activeLocks = locksFor(currentTurn);
 
       for (let c = 0; c < COLS; c++) {
         const btn = document.createElement('button');
-        btn.className = 'w-full h-6 sm:h-7 rounded-lg flex items-center justify-center transition shadow-xs ';
+        btn.className = 'w-full h-6 sm:h-7 rounded-lg flex items-center justify-center transition shadow-sm ';
         
         // Check if column is locked to a different animal than active pusher
         const isLockedMismatch = activePusher && activeLocks[c] && (activeLocks[c] !== activePusher.animal);
 
-        if (!isMyTurn) {
+        if (!isMyTurn || gameOver) {
           btn.className += 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-40';
           btn.innerHTML = `<span class="text-xs">⬇</span>`;
         } else if (isLockedMismatch) {
@@ -1434,18 +1659,32 @@
       const turnCard = document.getElementById('turn-banner-card');
       const scoreEl = document.getElementById('score-display');
       const oppScoreEl = document.getElementById('opp-score-display');
+      const scoreLabel = document.getElementById('score-label');
+      const oppScoreLabel = document.getElementById('opp-score-label');
       const playerPill = document.getElementById('player-turn-pill');
       const oppPill = document.getElementById('opp-turn-pill');
+      const playerLabel = document.getElementById('player-label-title');
+      const oppLabel = document.getElementById('opp-label-title');
+      const bottomRole = viewRole();
+      const topRole = bottomRole === 'p1' ? 'p2' : 'p1';
+      const bottomPlayer = bottomRole === 'p1' ? '1' : '2';
+      const topPlayer = topRole === 'p1' ? '1' : '2';
+      const bottomScore = bottomRole === 'p1' ? score : oppScore;
+      const topScore = topRole === 'p1' ? score : oppScore;
 
-      if (scoreEl) scoreEl.textContent = score.toString();
-      if (oppScoreEl) oppScoreEl.textContent = oppScore.toString();
+      if (scoreEl) scoreEl.textContent = bottomScore.toString();
+      if (oppScoreEl) oppScoreEl.textContent = topScore.toString();
+      if (scoreLabel) scoreLabel.textContent = `P${bottomPlayer} Score:`;
+      if (oppScoreLabel) oppScoreLabel.textContent = `P${topPlayer} Score:`;
+      if (playerLabel) playerLabel.textContent = `Player ${bottomPlayer} Grid${gameMode === 'pass_play' ? '' : ' (You)'}`;
+      if (oppLabel) oppLabel.textContent = `Player ${topPlayer} Grid`;
 
       if (activePusher && ANIMAL_DEFS[activePusher.animal]) {
         if (pusherBox) pusherBox.innerHTML = ANIMAL_DEFS[activePusher.animal].render();
         if (animalText) animalText.textContent = ANIMAL_DEFS[activePusher.animal].name;
       }
 
-      const isMyTurn = (gameMode !== 'online') ? (currentTurn === 'p1' || gameMode === 'pass_play') : (currentTurn === myRole);
+      const isMyTurn = isLocalTurn();
       
       if (turnTitle) {
         if (gameMode === 'pass_play') {
@@ -1459,22 +1698,22 @@
 
       if (turnCard) {
         if (isMyTurn) {
-          turnCard.className = 'bg-emerald-600 border border-white text-white rounded-lg px-2.5 py-1 shadow-xs flex items-center gap-1.5';
+          turnCard.className = 'bg-emerald-600 border border-white text-white rounded-lg px-2.5 py-1 shadow-sm flex items-center gap-1.5';
         } else {
-          turnCard.className = 'bg-slate-700 border border-slate-500 text-slate-200 rounded-lg px-2.5 py-1 shadow-xs flex items-center gap-1.5';
+          turnCard.className = 'bg-slate-700 border border-slate-500 text-slate-200 rounded-lg px-2.5 py-1 shadow-sm flex items-center gap-1.5';
         }
       }
 
       if (playerPill) {
-        const isP1 = (currentTurn === 'p1');
-        playerPill.textContent = isP1 ? 'Active' : 'Waiting';
-        playerPill.className = `text-[9px] font-black px-2 py-0.5 rounded-full shadow-xs ${isP1 ? 'text-emerald-900 bg-emerald-100' : 'text-slate-600 bg-white/70'}`;
+        const isActive = currentTurn === bottomRole;
+        playerPill.textContent = isActive ? 'Active' : 'Waiting';
+        playerPill.className = `text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm ${isActive ? 'text-emerald-900 bg-emerald-100' : 'text-slate-600 bg-white/70'}`;
       }
 
       if (oppPill) {
-        const isP2 = (currentTurn === 'p2');
-        oppPill.textContent = isP2 ? 'Active' : 'Waiting';
-        oppPill.className = `text-[9px] font-black px-2 py-0.5 rounded-full shadow-xs ${isP2 ? 'text-indigo-900 bg-indigo-100' : 'text-slate-600 bg-white/70'}`;
+        const isActive = currentTurn !== bottomRole;
+        oppPill.textContent = isActive ? 'Active' : 'Waiting';
+        oppPill.className = `text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm ${isActive ? 'text-indigo-900 bg-indigo-100' : 'text-slate-600 bg-white/70'}`;
       }
     }
 
@@ -1520,23 +1759,25 @@
     function showTurnToast(message) {
       const toast = document.getElementById('turn-toast');
       if (!toast) return;
+      clearTimeout(toastTimer);
       toast.textContent = message;
       toast.classList.remove('hidden');
-      setTimeout(() => {
+      toastTimer = setTimeout(() => {
         toast.classList.add('hidden');
+        toastTimer = null;
       }, 1100);
     }
 
     function onPushColumn(colIndex) {
-      if (isPushingAnimation) return;
+      if (gameOver) return;
 
-      const isMyTurn = (gameMode !== 'online') || (currentTurn === myRole);
-      if (!isMyTurn) {
+      if (!isLocalTurn()) {
         showTurnToast("Wait for your turn!");
         return;
       }
+      if (isPushingAnimation) return;
 
-      const activeLocks = (myRole === 'p2') ? oppColumnLocks : playerColumnLocks;
+      const activeLocks = locksFor(currentTurn);
 
       // Check Column Reservation: Column locked to a different animal?
       if (activeLocks[colIndex] && activeLocks[colIndex] !== activePusher.animal) {
@@ -1547,8 +1788,9 @@
       executePush(colIndex, currentTurn);
     }
 
-    function executePush(colIndex, turn) {
+    function executePush(colIndex, turn, resolveTurnState = true) {
       if (isPushingAnimation) return;
+      const epoch = gameEpoch;
       isPushingAnimation = true;
 
       playMahjongSound('push');
@@ -1586,6 +1828,7 @@
       checkColumnMatches(targetGrid, colIndex, turn);
 
       setTimeout(() => {
+        if (epoch !== gameEpoch) return;
         isPushingAnimation = false;
 
         if (poppedTile) {
@@ -1608,10 +1851,6 @@
             showTurnToast(`Opponent's tile! Turn passed to ${currentTurn.toUpperCase()}`);
             recordLog(`Turn passed to ${currentTurn.toUpperCase()}`);
             renderAll();
-
-            if (gameMode === 'ai' && currentTurn === 'p2') {
-              setTimeout(runAITurn, 900);
-            }
           }
         } else {
           // Empty slot popped, spawn fresh pusher
@@ -1622,7 +1861,15 @@
           renderAll();
         }
 
-        if (gameMode === 'online') {
+        if (checkGameOver()) {
+          renderAll();
+        } else if (resolveTurnState) {
+          resolveNoLegalMoves();
+        } else {
+          renderAll();
+        }
+
+        if (gameMode === 'online' && resolveTurnState) {
           broadcastNetworkState({
             type: 'MOVE_PUSH',
             colIndex,
@@ -1634,38 +1881,40 @@
     }
 
     function checkColumnMatches(grid, colIndex, turn) {
-      let streak = 0;
-      let matchedIndices = [];
+      let row = 0;
+      while (row < ROWS) {
+        const tile = grid[row][colIndex];
+        if (!tile || !tile.isFlipped || tile.animal !== activePusher.animal) {
+          row++;
+          continue;
+        }
 
-      for (let r = 0; r < ROWS; r++) {
-        const tile = grid[r][colIndex];
-        if (tile && tile.isFlipped && tile.animal === activePusher.animal) {
-          streak++;
-          matchedIndices.push(r);
-          if (streak >= 3) {
-            // Match-3 Achieved
-            playMahjongSound('match');
-            if (turn === 'p1') score += 300; else oppScore += 300;
-            recordLog(`🎉 MATCH-3 on Column ${colIndex + 1}! +300 points.`);
-            matchedIndices.forEach(rowIdx => {
-              grid[rowIdx][colIndex] = null;
-            });
-            break;
+        const runStart = row;
+        while (row < ROWS) {
+          const runTile = grid[row][colIndex];
+          if (!runTile || !runTile.isFlipped || runTile.animal !== activePusher.animal) break;
+          row++;
+        }
+        const runLength = row - runStart;
+        if (runLength >= 3) {
+          playMahjongSound('match');
+          const points = 100 * runLength;
+          if (turn === 'p1') score += points; else oppScore += points;
+          recordLog(`🎉 MATCH on Column ${colIndex + 1}! +${points} points.`);
+          for (let matchedRow = runStart; matchedRow < row; matchedRow++) {
+            grid[matchedRow][colIndex] = null;
           }
-        } else {
-          streak = 0;
-          matchedIndices = [];
         }
       }
     }
 
     function runAITurn() {
-      if (gameMode !== 'ai' || currentTurn !== 'p2') return;
+      if (gameMode !== 'ai' || currentTurn !== 'p2' || gameOver) return;
 
-      // AI searches for matching column or first open valid column
+      const aiLocks = locksFor('p2');
       let chosenCol = -1;
       for (let c = 0; c < COLS; c++) {
-        if (oppColumnLocks[c] === activePusher.animal) {
+        if (aiLocks[c] === activePusher.animal) {
           chosenCol = c;
           break;
         }
@@ -1674,11 +1923,10 @@
       if (chosenCol === -1) {
         const validCols = [];
         for (let c = 0; c < COLS; c++) {
-          if (!oppColumnLocks[c]) validCols.push(c);
+          if (!aiLocks[c]) validCols.push(c);
         }
-        chosenCol = validCols.length > 0 
-          ? validCols[Math.floor(Math.random() * validCols.length)] 
-          : Math.floor(Math.random() * COLS);
+        if (!validCols.length) return;
+        chosenCol = validCols[Math.floor(Math.random() * validCols.length)];
       }
 
       recordLog(`AI pushing active [${ANIMAL_DEFS[activePusher.animal].name}] into Column ${chosenCol + 1}...`);
@@ -1721,6 +1969,8 @@
       if (peer) {
         try { peer.destroy(); } catch (e) {}
       }
+      activeConn = null;
+      if (!isHost) peerUnavailableRetries = 0;
 
       if (window.Peer) {
         try {
@@ -1746,11 +1996,36 @@
 
           peer.on('connection', (conn) => {
             recordLog(`Incoming connection from guest!`);
+            if (activeConn && activeConn.open && activeConn.peer !== conn.peer) {
+              conn.on('open', () => {
+                conn.send({ type: 'ROOM_FULL' });
+                setTimeout(() => conn.close(), 500);
+              });
+              return;
+            }
             bindPeerConnection(conn);
           });
 
           peer.on('error', (err) => {
             recordLog(`P2P notice: ${err.type || err.message}`);
+            if (err.type === 'peer-unavailable' && !isHost) {
+              if (peerUnavailableRetries < 5) {
+                peerUnavailableRetries++;
+                updateLobbyUI(`Room [${code}] not found, retrying (${peerUnavailableRetries}/5)...`, 'p2');
+                setTimeout(() => {
+                  if (gameMode !== 'online' || myRole !== 'p2' || currentRoomCode !== code ||
+                      !peer || (activeConn && activeConn.open)) return;
+                  const retryConn = peer.connect(`mjhost_${code}`, { reliable: true });
+                  bindPeerConnection(retryConn);
+                }, 3000);
+              } else {
+                updateLobbyUI(`Room [${code}] not found`, 'p2');
+                showTurnToast(`Room [${code}] not found`);
+              }
+            } else if (err.type === 'unavailable-id' && isHost) {
+              updateLobbyUI('Room code taken, click Create Room again', 'p1');
+              showTurnToast('Room code taken, click Create Room again');
+            }
           });
 
           peer.on('disconnected', () => {
@@ -1787,6 +2062,7 @@
       activeConn = conn;
 
       conn.on('open', () => {
+        peerUnavailableRetries = 0;
         recordLog(`🟢 Cross-device P2P link established!`);
         document.getElementById('conn-indicator').className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block';
 
@@ -1809,6 +2085,7 @@
       });
 
       conn.on('close', () => {
+        if (conn !== activeConn) return;
         recordLog("🔴 Peer connection closed.");
         document.getElementById('conn-indicator').className = 'w-2.5 h-2.5 rounded-full bg-rose-500 inline-block';
         showTurnToast("Peer disconnected");
@@ -1827,21 +2104,36 @@
             type: 'INIT_STATE',
             state: getFullStateObject()
           });
-        } else if (data.type === 'INIT_STATE') {
+        } else if (data.type === 'INIT_STATE' && myRole === 'p2') {
+          if (!isValidState(data.state)) {
+            recordLog('Ignored invalid INIT_STATE payload.');
+            return;
+          }
           gameMode = 'online';
           initTuiTuiLeGame(data.state);
           updateLobbyUI(`Connected to Host! [${currentRoomCode}]`, 'p2');
           showTurnToast("Board synced with Host!");
         } else if (data.type === 'MOVE_PUSH') {
-          recordLog(`Received move from opponent (Column ${data.colIndex + 1})`);
           if (data.state) {
+            if (!isValidState(data.state)) {
+              recordLog('Ignored invalid MOVE_PUSH state.');
+              return;
+            }
+            recordLog(`Received move from opponent (Column ${data.colIndex + 1})`);
             initTuiTuiLeGame(data.state);
           } else {
-            executePush(data.colIndex, data.turn);
+            if (myRole !== 'p2' || !Number.isInteger(data.colIndex) || data.colIndex < 0 ||
+                data.colIndex >= COLS || (data.turn !== 'p1' && data.turn !== 'p2')) {
+              recordLog('Ignored invalid MOVE_PUSH payload.');
+              return;
+            }
+            recordLog(`Received move from opponent (Column ${data.colIndex + 1})`);
+            executePush(data.colIndex, data.turn, false);
           }
           renderAll();
-        } else if (data.type === 'RESTART') {
-          initTuiTuiLeGame(data.state);
+        } else if (data.type === 'ROOM_FULL') {
+          updateLobbyUI('Room is full', 'p2');
+          showTurnToast('Room is full');
         }
       } catch (err) {
         recordLog(`Network message error: ${err.message}`);
@@ -1850,7 +2142,6 @@
 
     async function broadcastNetworkState(payload) {
       if (!currentRoomCode) return;
-      const channelName = `tuile_room_${currentRoomCode}`;
 
       // 1. Direct WebRTC P2P Send (PC <-> Phone instant transmission)
       if (activeConn && activeConn.open) {
@@ -1883,15 +2174,30 @@
         }
       }
 
-      // 4. LocalStorage multi-window fallback
-      try {
-        localStorage.setItem(channelName, JSON.stringify({
-          ...payload,
-          _uid: Math.random() + Date.now()
-        }));
-      } catch (e) {
-        // storage quota
+    }
+
+    function leaveRoom() {
+      const conn = activeConn;
+      activeConn = null;
+      if (conn) {
+        try { conn.close(); } catch (e) {}
       }
+      if (peer) {
+        try { peer.destroy(); } catch (e) {}
+      }
+      peer = null;
+      if (roomChannel) {
+        try { roomChannel.close(); } catch (e) {}
+      }
+      roomChannel = null;
+      if (firestoreUnsubscribe) {
+        try { firestoreUnsubscribe(); } catch (e) {}
+      }
+      firestoreUnsubscribe = null;
+      currentRoomCode = null;
+      document.getElementById('room-code-badge').classList.add('hidden');
+      myRole = 'p1';
+      document.getElementById('conn-indicator').className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block';
     }
 
     function generateShareableLink(code) {
@@ -2019,21 +2325,20 @@
         };
 
         const str = JSON.stringify(diagnosticPayload, null, 2);
-        const dummy = document.createElement("textarea");
-        document.body.appendChild(dummy);
-        dummy.value = str;
-        dummy.select();
-        document.execCommand("copy");
-        document.body.removeChild(dummy);
-
-        copyConfirm.classList.remove('hidden');
-        setTimeout(() => copyConfirm.classList.add('hidden'), 2200);
+        copyText(str).then(() => {
+          copyConfirm.classList.remove('hidden');
+          setTimeout(() => copyConfirm.classList.add('hidden'), 2200);
+        }).catch(err => recordLog(`Copy payload error: ${err.message}`));
       });
     }
 
     /* =================================================================
        8. RUN & BIND
        ================================================================= */
+    document.addEventListener('pointerdown', () => {
+      if (window.Tone) Tone.start();
+    }, { once: true });
+
     window.addEventListener('DOMContentLoaded', () => {
       initTuiTuiLeGame();
       initBugReportTools();
@@ -2078,20 +2383,17 @@
 
       // Copy My Friend Tag
       document.getElementById('btn-copy-my-tag').addEventListener('click', () => {
-        const dummy = document.createElement("textarea");
-        document.body.appendChild(dummy);
-        dummy.value = myUserTag;
-        dummy.select();
-        document.execCommand("copy");
-        document.body.removeChild(dummy);
-        showTurnToast("Friend Tag Copied!");
-        recordLog(`Copied permanent friend tag: ${myUserTag}`);
+        copyText(myUserTag).then(() => {
+          showTurnToast("Friend Tag Copied!");
+          recordLog(`Copied permanent friend tag: ${myUserTag}`);
+        }).catch(err => recordLog(`Copy tag error: ${err.message}`));
       });
 
       // Save / Lock Custom Permanent Tag
       document.getElementById('btn-save-custom-tag').addEventListener('click', () => {
         const tagInput = document.getElementById('input-custom-tag');
         if (!tagInput) return;
+        const oldTag = myUserTag;
         let raw = tagInput.value.trim().toUpperCase().replace(/[^A-Z0-9#-]/g, '');
         if (!raw.startsWith('#')) raw = '#' + raw;
 
@@ -2101,22 +2403,29 @@
         }
 
         saveStoredPermanentTag(raw);
+        tagInput.value = myUserTag;
         showTurnToast(`Permanent Code Locked: ${myUserTag}`);
         recordLog(`Saved permanent custom code: ${myUserTag}`);
         document.getElementById('custom-code-drawer').classList.add('hidden');
+        if (oldTag !== myUserTag) {
+          try { localStorage.removeItem(`mj_presence_${oldTag}`); } catch (e) {}
+        }
+        syncMqttSubscriptions();
         startPresenceBroadcast(); // Re-broadcast presence under the updated permanent tag
+        listenForChallenges();
       });
 
       // Add Friend by Tag
       document.getElementById('btn-add-friend').addEventListener('click', () => {
         const input = document.getElementById('input-add-friend-tag');
-        const raw = (input ? input.value : '').trim().toUpperCase();
-        if (!raw || raw === myUserTag) {
+        let raw = (input ? input.value : '').trim().toUpperCase().replace(/[^A-Z0-9#-]/g, '');
+        if (!raw.startsWith('#')) raw = `#${raw}`;
+        if (raw.length < 4 || raw.length > 12 || !/^#[A-Z0-9-]{3,11}$/.test(raw) || raw === myUserTag) {
           showTurnToast("Invalid friend tag!");
           return;
         }
 
-        const tag = raw.startsWith('#') ? raw : `#${raw}`;
+        const tag = raw;
         if (savedFriends.some(f => f.tag === tag)) {
           showTurnToast("Friend already in list!");
           return;
@@ -2130,65 +2439,15 @@
         broadcastMeshHeartbeat();
       });
 
-      // Copy My Friend Tag
-      document.getElementById('btn-copy-my-tag').addEventListener('click', () => {
-        const dummy = document.createElement("textarea");
-        document.body.appendChild(dummy);
-        dummy.value = myUserTag;
-        dummy.select();
-        document.execCommand("copy");
-        document.body.removeChild(dummy);
-        showTurnToast("Permanent Friend Tag Copied!");
-        recordLog(`Copied permanent friend tag: ${myUserTag}`);
-      });
-
-      // Save / Lock Custom Permanent Tag
-      document.getElementById('btn-save-custom-tag').addEventListener('click', () => {
-        const tagInput = document.getElementById('input-custom-tag');
-        if (!tagInput) return;
-        let raw = tagInput.value.trim().toUpperCase().replace(/[^A-Z0-9#-]/g, '');
-        if (!raw.startsWith('#')) raw = '#' + raw;
-
-        if (raw.length < 4 || raw.length > 12) {
-          showTurnToast("Code must be between 4 and 12 chars!");
-          return;
-        }
-
-        saveStoredPermanentTag(raw);
-        tagInput.value = myUserTag;
-        showTurnToast(`Permanent Code Locked: ${myUserTag}`);
-        recordLog(`Saved permanent custom code: ${myUserTag}`);
-        startPresenceBroadcast(); // Re-broadcast presence under the updated permanent tag
-      });
-
-      // Add Friend by Tag
-      document.getElementById('btn-add-friend').addEventListener('click', () => {
-        const input = document.getElementById('input-add-friend-tag');
-        const raw = (input ? input.value : '').trim().toUpperCase();
-        if (!raw || raw === myUserTag) {
-          showTurnToast("Invalid friend tag!");
-          return;
-        }
-
-        const tag = raw.startsWith('#') ? raw : `#${raw}`;
-        if (savedFriends.some(f => f.tag === tag)) {
-          showTurnToast("Friend already in list!");
-          return;
-        }
-
-        savedFriends.push({ tag: tag, name: `Friend ${tag.slice(-4)}` });
-        saveFriendsList();
-        if (input) input.value = '';
-        showTurnToast(`Added ${tag} to friends!`);
-        recordLog(`Added new friend: ${tag}`);
-      });
-
       // Accept / Decline Challenge
       document.getElementById('btn-accept-challenge').addEventListener('click', async () => {
+        if (challengeTimer) clearTimeout(challengeTimer);
+        challengeTimer = null;
         document.getElementById('challenge-popup').classList.add('hidden');
         if (!pendingChallengeRoom) return;
 
         currentRoomCode = pendingChallengeRoom;
+        pendingChallengeRoom = null;
         myRole = 'p2';
         gameMode = 'online';
 
@@ -2202,6 +2461,8 @@
       });
 
       document.getElementById('btn-decline-challenge').addEventListener('click', () => {
+        if (challengeTimer) clearTimeout(challengeTimer);
+        challengeTimer = null;
         document.getElementById('challenge-popup').classList.add('hidden');
         pendingChallengeRoom = null;
       });
@@ -2245,17 +2506,12 @@
       // Copy Code button inside QR Modal
       document.getElementById('btn-copy-join-url').addEventListener('click', () => {
         if (!currentRoomCode) return;
-        const dummy = document.createElement("textarea");
-        document.body.appendChild(dummy);
-        dummy.value = currentRoomCode;
-        dummy.select();
-        document.execCommand("copy");
-        document.body.removeChild(dummy);
-
-        const feedback = document.getElementById('qr-copy-feedback');
-        feedback.textContent = 'Room code copied!';
-        feedback.classList.remove('hidden');
-        setTimeout(() => feedback.classList.add('hidden'), 2200);
+        copyText(currentRoomCode).then(() => {
+          const feedback = document.getElementById('qr-copy-feedback');
+          feedback.textContent = 'Room code copied!';
+          feedback.classList.remove('hidden');
+          setTimeout(() => feedback.classList.add('hidden'), 2200);
+        }).catch(err => recordLog(`Copy code error: ${err.message}`));
       });
 
       // Copy Full Link from Modal with fallback
@@ -2263,23 +2519,14 @@
         if (!currentRoomCode) return;
         const linkToCopy = generateShareableLink(currentRoomCode);
 
-        try {
-          const dummy = document.createElement("textarea");
-          dummy.style.position = "fixed";
-          dummy.style.opacity = "0";
-          document.body.appendChild(dummy);
-          dummy.value = linkToCopy;
-          dummy.select();
-          document.execCommand("copy");
-          document.body.removeChild(dummy);
-
+        copyText(linkToCopy).then(() => {
           const feedback = document.getElementById('qr-copy-feedback');
           feedback.textContent = 'Direct join link copied!';
           feedback.classList.remove('hidden');
           setTimeout(() => feedback.classList.add('hidden'), 2200);
-        } catch (copyErr) {
+        }).catch(copyErr => {
           recordLog(`Copy link error: ${copyErr.message}`);
-        }
+        });
       });
 
       // Join Room Handler with input validation
@@ -2307,7 +2554,7 @@
           await setupRoomChannel(cleanCode, false);
         } catch (joinErr) {
           recordLog(`Error joining room: ${joinErr.message}`);
-          showTurnToast("Connection attempt failed. Retrying...");
+          showTurnToast("Connection attempt failed");
         }
       });
 
@@ -2324,16 +2571,6 @@
             roomToJoin = hashParams.get('room');
           }
 
-          if (!roomToJoin && document.referrer) {
-            try {
-              const refUrl = new URL(document.referrer);
-              roomToJoin = refUrl.searchParams.get('room');
-              if (!roomToJoin && refUrl.hash) {
-                const refHashParams = new URLSearchParams(refUrl.hash.replace(/^#/, ''));
-                roomToJoin = refHashParams.get('room');
-              }
-            } catch (refErr) {}
-          }
         } catch (e) {
           recordLog(`Auto-join inspection notice: ${e.message}`);
         }
@@ -2360,18 +2597,26 @@
       // Copy Code Button
       document.getElementById('btn-copy-code').addEventListener('click', () => {
         if (!currentRoomCode) return;
-        const dummy = document.createElement("textarea");
-        document.body.appendChild(dummy);
-        dummy.value = currentRoomCode;
-        dummy.select();
-        document.execCommand("copy");
-        document.body.removeChild(dummy);
-        recordLog(`Room code ${currentRoomCode} copied.`);
-        showTurnToast("Room Code Copied!");
+        copyText(currentRoomCode).then(() => {
+          recordLog(`Room code ${currentRoomCode} copied.`);
+          showTurnToast("Room Code Copied!");
+        }).catch(err => recordLog(`Copy code error: ${err.message}`));
       });
 
       // Mode Toggle (AI vs Pass & Play)
       document.getElementById('btn-mode-toggle').addEventListener('click', () => {
+        clearTimeout(aiTimer);
+        aiTimer = null;
+        if (gameMode === 'online') {
+          leaveRoom();
+          gameMode = 'ai';
+          document.getElementById('mode-label').textContent = 'AI';
+          initTuiTuiLeGame();
+          updateLobbyUI("Solo vs AI", 'p1');
+          scheduleAITurnIfNeeded();
+          return;
+        }
+
         if (gameMode === 'ai') {
           gameMode = 'pass_play';
           document.getElementById('mode-label').textContent = 'Pass&Play';
@@ -2381,10 +2626,24 @@
           document.getElementById('mode-label').textContent = 'AI';
           updateLobbyUI("Solo vs AI", 'p1');
         }
+        scheduleAITurnIfNeeded();
       });
 
       // Restart Button
       document.getElementById('btn-restart').addEventListener('click', () => {
+        if (gameMode === 'online' && myRole === 'p2') {
+          showTurnToast("Only the host can restart");
+          return;
+        }
+        playMahjongSound('push');
+        initTuiTuiLeGame();
+      });
+
+      document.getElementById('btn-play-again').addEventListener('click', () => {
+        if (gameMode === 'online' && myRole === 'p2') {
+          showTurnToast("Waiting for host to restart");
+          return;
+        }
         playMahjongSound('push');
         initTuiTuiLeGame();
       });
